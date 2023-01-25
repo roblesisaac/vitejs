@@ -3,5 +3,8 @@ import vue from '@vitejs/plugin-vue'
 
 // https://vitejs.dev/config/
 export default defineConfig({
+  outputDir: "./static",
   plugins: [vue()],
 })
+
+
