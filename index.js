@@ -1,6 +1,4 @@
-import { api, http } from "@serverless/cloud";
-
-http.on(404, "index.html");
+import { api } from "@serverless/cloud";
 
 api.get("/aloha", (req, res) => {
     res.send("hello hi");
