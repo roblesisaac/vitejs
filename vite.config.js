@@ -6,11 +6,11 @@ export default defineConfig({
   build: {
     outDir: "../vitejs/static"
   },
-  // server: {
-  //   proxy: {
-  //     '/aloha': 'http://localhost:5173/aloha',
-  //   },
-  // },
+  server: {
+    proxy: {
+      '/aloha': 'http://localhost:5173',
+    },
+  },
   plugins: [vue()],
 })
 
