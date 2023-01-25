@@ -16,5 +16,9 @@
     "@serverless/cloud": "^2.11.8",
     "@vitejs/plugin-vue": "^4.0.0",
     "vite": "^4.0.4"
+  },
+  "serverless": {
+    "app": "vite",
+    "org": "irobles1030"
   }
 }
