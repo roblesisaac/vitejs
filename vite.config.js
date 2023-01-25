@@ -8,10 +8,8 @@ export default defineConfig({
   },
   server: {
     proxy: {
-      '/aloha': 'http://localhost:5173',
+      '/aloha': 'http://localhost:5173/',
     },
   },
   plugins: [vue()],
 })
-
-

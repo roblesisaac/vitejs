@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "start": "cloud",
-    "dev": "vite",
+    "dev": "cloud",
     "build": "vite build",
     "preview": "vite preview"
   },
