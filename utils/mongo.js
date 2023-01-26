@@ -151,10 +151,10 @@ export default new Pipe({
     }
   },
   catch: function(error) {
-    const { res } = this;
-    if(res) {
-      console.log("there is a res");
-      res.json(error.error);
+    const { res, settings } = this;
+    if(res || settings.res) {
+      const respond = res || settings.res;
+      respond.json(error.error);
     } else {
       console.log({
         message: "nope",
