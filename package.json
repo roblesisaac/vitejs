@@ -6,7 +6,7 @@
   "scripts": {
     "start": "cloud",
     "dev": "vite",
-    "build": "vite build; git commit -a -m \"update\"",
+    "build": "clear; git add -A; git commit -m \"cloud update\"; git push;",
     "preview": "vite preview"
   },
   "dependencies": {
