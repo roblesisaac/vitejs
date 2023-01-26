@@ -152,7 +152,7 @@ export default new Pipe({
   },
   catch: function(error) {
     const { res } = this;
-
+    console.log({ aloha: error });
     if(res) {
       res.json(error.error);
     } else {
