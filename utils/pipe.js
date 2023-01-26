@@ -122,6 +122,10 @@ function Pipe(blueprint) {
           prev,
           stepPrint
         };
+
+        console.log({
+          _catch
+        });
         
         const errMethod = _catch ? _catch[_pipeName] || _catch : console.log;
         
