@@ -1,5 +1,25 @@
-import { createApp } from 'vue'
-import './style.css'
-import App from './App.vue'
+import { createApp } from "vue";
+import { createRouter, createWebHistory } from "vue-router";
+import App from "./App.vue";
 
-createApp(App).mount('#app')
+import HelloWorld from "./components/HelloWorld.vue";
+import SwiperVue from "./components/SwiperVue.vue";
+
+const router = createRouter({
+    history: createWebHistory(),
+    routes: [
+        {
+            path: "/",
+            component: HelloWorld
+        },
+        {
+            path: "/swiper",
+            component: SwiperVue
+        }
+    ]
+});
+
+
+createApp(App)
+    .use(router)
+    .mount("#app");

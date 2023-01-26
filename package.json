@@ -11,7 +11,9 @@
   },
   "dependencies": {
     "node-fetch": "^3.3.0",
-    "vue": "^3.2.45"
+    "swiper": "^8.4.6",
+    "vue": "^3.2.45",
+    "vue-router": "^4.1.6"
   },
   "devDependencies": {
     "@serverless/cloud": "^2.10.13",
