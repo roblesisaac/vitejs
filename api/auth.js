@@ -2,7 +2,8 @@ import { Pipe } from "../utils/pipe.js";
 import mongo from "../utils/mongo.js";
 
 export default async (req, res) => {
+  const respond = (output) => res.json(output);
   mongo.insert("users", { name: 12 })
-    .then(output => res.json(output))
-    .catch(err => res.json(err));
+    .then(respond)
+    .catch(respond);
 }
