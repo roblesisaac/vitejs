@@ -195,6 +195,7 @@ export default new Pipe({
       "_exec"
     ],
     insert: (collection, data, settings) => [
+      { log: data },
       "_setup",
       "buildInsertOptions",
       {
