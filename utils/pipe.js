@@ -201,7 +201,7 @@ function Pipe(blueprint) {
         };
   
         const { _output } = memory,
-          _errorMessage = _output ? _output._error : _error;
+        _errorMessage = _output ? _output._error : _error;
           
         if(_errorMessage) {
           handleError(memory, _errorMessage);
