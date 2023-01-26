@@ -3,7 +3,7 @@ import mongo from "../utils/mongo.js";
 
 export default async (req, res) => {
   mongo.insert("users", {
-    name: "aloha"
+    name: 12
   }).then(output => {
     res.json(output);
   });
