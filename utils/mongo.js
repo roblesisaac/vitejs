@@ -152,10 +152,14 @@ export default new Pipe({
   },
   catch: function(error) {
     const { res } = this;
-    console.log({ aloha: error });
     if(res) {
+      console.log("there is a res");
       res.json(error.error);
     } else {
+      console.log({
+        message: "nope",
+        self: this
+      });
       console.log(error);
     }
   },
