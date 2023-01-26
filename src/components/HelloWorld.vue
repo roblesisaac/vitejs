@@ -48,7 +48,7 @@ export default {
   created() {
     fetch("/users/db")
       .then(res => res.json()).then((response) => {
-        this.users = response.data;
+        this.users = response;
         this.loading = false;
       })
       .catch((error) => {
