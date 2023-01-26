@@ -125,7 +125,7 @@ function Pipe(blueprint) {
         
         const errMethod = _catch ? _catch[_pipeName] || _catch : console.log;
 
-        console.log({ errMethod: errMethod.toString() });
+        console.log({ errMethod: errMethod.toString(), _rej: _rej.toString() });
         
         if (errMethod && typeof errMethod == "function") {
           errMethod.call(memory, errMessage);
