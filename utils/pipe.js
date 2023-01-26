@@ -301,6 +301,7 @@ function Pipe(blueprint) {
   
     pipeMethod.steps = getSteps;
     pipeMethod.step = getStep;
+    pipeMethod.data = buildWithSpecialArgs(pipeMethod);
   
     if (pipeName != "run") {
       pipe._library.pipes[pipeName] = pipeMethod;
