@@ -200,8 +200,8 @@ function Pipe(blueprint) {
           return printCopy;
         };
   
-        const { _output } = memory,
-        _errorMessage = _output ? _output._error : _error;
+        const _errorMessage = memory._output
+          ? memory._output._error : memory._error;
           
         if(_errorMessage) {
           handleError(memory, _errorMessage);
