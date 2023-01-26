@@ -33,7 +33,7 @@ function Pipe(blueprint) {
       : getStep(sIndex, args, steps.nextStep() || { missingIndex: sIndex });
   };
 
-  const buildWithSpecialArgs = function(pipeMethod) {
+  const buildPipeStepWithSpecialArgs = function(pipeMethod) {
     return function() {
       const specialArgs = arguments;
       
@@ -200,8 +200,8 @@ function Pipe(blueprint) {
           return printCopy;
         };
   
-        const _errorMessage = memory._output
-          ? memory._output._error : memory._error;
+        const { _output } = memory,
+          _errorMessage = _output ? _output._error : _error;
           
         if(_errorMessage) {
           handleError(memory, _errorMessage);
@@ -301,12 +301,12 @@ function Pipe(blueprint) {
   
     pipeMethod.steps = getSteps;
     pipeMethod.step = getStep;
-    // pipeMethod.data = function() {
-    //   const specialArgs = arguments;
-    //   return function() {
-    //     return pipeMethod(arguments, null, null, specialArgs);
-    //   };
-    // }
+    pipeMethod.data = function() {
+      const specialArgs = arguments;
+      return function() {
+        return pipeMethod(arguments, null, null, specialArgs);
+      };
+    }
   
     if (pipeName != "run") {
       pipe._library.pipes[pipeName] = pipeMethod;
