@@ -48,6 +48,7 @@ export default {
   created() {
     fetch("/users/db")
       .then(res => res.json()).then((response) => {
+        console.log({ response });
         this.users = response;
         this.loading = false;
       })
