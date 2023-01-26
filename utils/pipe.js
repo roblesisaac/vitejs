@@ -33,7 +33,7 @@ function Pipe(blueprint) {
       : getStep(sIndex, args, steps.nextStep() || { missingIndex: sIndex });
   };
 
-  const buildWithSpecialArgs = function(pipeMethod) {
+  const buildPipeStepWithSpecialArgs = function(pipeMethod) {
     return function() {
       const specialArgs = arguments;
       
@@ -312,7 +312,7 @@ function Pipe(blueprint) {
       pipe._library.pipes[pipeName] = pipeMethod;
     }
   
-    obj.assignNative(pipe, pipeName+"_", buildWithSpecialArgs(pipeMethod));
+    obj.assignNative(pipe, pipeName+"_", buildPipeStepWithSpecialArgs(pipeMethod));
     obj.assignNative(pipe, pipeName, pipeMethod);
   };
 
