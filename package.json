@@ -18,7 +18,8 @@
   "devDependencies": {
     "@serverless/cloud": "^2.10.13",
     "@vitejs/plugin-vue": "^4.0.0",
-    "vite": "^4.0.4"
+    "vite": "^4.0.4",
+    "vite-plugin-pwa": "^0.14.1"
   },
   "serverless": {
     "app": "vite",
