@@ -33,7 +33,7 @@ function Pipe(blueprint) {
       : getStep(sIndex, args, steps.nextStep() || { missingIndex: sIndex });
   };
 
-  const buildPipeStepWithSpecialArgs = function(pipeMethod) {
+  const buildWithSpecialArgs = function(pipeMethod) {
     return function() {
       const specialArgs = arguments;
       
@@ -301,18 +301,18 @@ function Pipe(blueprint) {
   
     pipeMethod.steps = getSteps;
     pipeMethod.step = getStep;
-    pipeMethod.data = function() {
-      const specialArgs = arguments;
-      return function() {
-        return pipeMethod(arguments, null, null, specialArgs);
-      };
-    }
+    // pipeMethod.data = function() {
+    //   const specialArgs = arguments;
+    //   return function() {
+    //     return pipeMethod(arguments, null, null, specialArgs);
+    //   };
+    // }
   
     if (pipeName != "run") {
       pipe._library.pipes[pipeName] = pipeMethod;
     }
   
-    obj.assignNative(pipe, pipeName+"_", buildPipeStepWithSpecialArgs(pipeMethod));
+    obj.assignNative(pipe, pipeName+"_", buildWithSpecialArgs(pipeMethod));
     obj.assignNative(pipe, pipeName, pipeMethod);
   };
 
