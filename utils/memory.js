@@ -9,21 +9,21 @@ export default function Memory(pipe) {
       if (!rawData) return;
     
       const define = (prop, definer) => {
-          Object.defineProperty(assignee, prop, definer);
-        },
-        defineGetterMethod = (value, prop) => {
-          define(prop, {
-            enumerable: true,
-            get: value.bind(this)
-          });
-        },
-        getAndSetFromPipe = (prop) => {
-          define(prop, {
-            enumerable: true,
-            get: () => pipe[prop],
-            set: (newValue) => pipe[prop] = newValue
-          });
-        };
+        Object.defineProperty(assignee, prop, definer);
+      },
+      defineGetterMethod = (value, prop) => {
+        define(prop, {
+          enumerable: true,
+          get: value.bind(this)
+        });
+      },
+      getAndSetFromPipe = (prop) => {
+        define(prop, {
+          enumerable: true,
+          get: () => pipe[prop],
+          set: (newValue) => pipe[prop] = newValue
+        });
+      };
     
       const data = format(rawData);
       
@@ -55,8 +55,8 @@ export default function Memory(pipe) {
     assignProps(this, bluePrnt.data);
       
     return this;
-  };
-  const _learn = function() {
+  },
+  _learn = function() {
     if(!arguments.length) return this;
     
     const learnData = (data) => {
@@ -74,8 +74,8 @@ export default function Memory(pipe) {
     Array.from(arguments).forEach(learnData);
     
     return this;
-  };
-  const _import = function() {
+  },
+  _import = function() {
     if(!arguments.length) return this;
     
     const learnDataObject = (data) => {
@@ -87,8 +87,8 @@ export default function Memory(pipe) {
     Array.from(arguments).forEach(learnDataObject);
     
     return this;
-  };
-  const _addTools = function(data) {
+  },
+  _addTools = function(data) {
     const config = (prop) => {
       return {
         configurable: true,
@@ -102,7 +102,7 @@ export default function Memory(pipe) {
     }
   
     return this;
-  }
+  };
 
   const _natives = { _absorb, _learn, _import, _addTools };
 

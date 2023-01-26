@@ -305,7 +305,7 @@ function Pipe(blueprint) {
       const specialArgs = arguments;
       return function() {
         return pipeMethod(arguments, null, null, specialArgs);
-      };      
+      };
     }
   
     if (pipeName != "run") {
