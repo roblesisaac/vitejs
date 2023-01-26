@@ -123,12 +123,10 @@ function Pipe(blueprint) {
           stepPrint
         };
         
-        const errMethod = _catch ? _catch[_pipeName] || _catch : console.log;
-
-        if(_rej) {
-          _rej.call(memory, errMessage);
-          return;
-        }
+        const errMethod = _rej
+          ? _rej
+          : _catch 
+          ? _catch[_pipeName] || _catch : console.log;
         
         if (errMethod && typeof errMethod == "function") {
           errMethod.call(memory, errMessage);
