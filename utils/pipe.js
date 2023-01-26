@@ -33,7 +33,7 @@ function Pipe(blueprint) {
       : getStep(sIndex, args, steps.nextStep() || { missingIndex: sIndex });
   };
 
-  const buildPipeStepWithSpecialArgs = function(pipeMethod) {
+  const buildWithSpecialArgs = function(pipeMethod) {
     return function() {
       const specialArgs = arguments;
       
@@ -56,7 +56,7 @@ function Pipe(blueprint) {
         isObj = type.isObject(stepPrint),
         specials = pipe._library.specials;
   
-    const methodName = typeof stepPrint == "string" 
+    const methodName = typeof stepPrint == "string"
           ? stepPrint
           : type.isObject(stepPrint)
           ? Object.keys(stepPrint)[0]
@@ -200,8 +200,8 @@ function Pipe(blueprint) {
           return printCopy;
         };
   
-        const _errorMessage = memory._output
-          ? memory._output._error : memory._error;
+        const { _output, _error } = memory,
+        _errorMessage = _output ? _output._error : _error;
           
         if(_errorMessage) {
           handleError(memory, _errorMessage);
@@ -312,7 +312,7 @@ function Pipe(blueprint) {
       pipe._library.pipes[pipeName] = pipeMethod;
     }
   
-    obj.assignNative(pipe, pipeName+"_", buildPipeStepWithSpecialArgs(pipeMethod));
+    obj.assignNative(pipe, pipeName+"_", buildWithSpecialArgs(pipeMethod));
     obj.assignNative(pipe, pipeName, pipeMethod);
   };
 
