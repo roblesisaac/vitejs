@@ -151,7 +151,9 @@ export default new Pipe({
     }
   },
   catch: function(error) {
-    const { res, settings } = this;
+    let { res, settings } = this;
+    settings = settings || {};
+    
     if(res || settings.res) {
       const respond = res || settings.res;
       respond.json(error.error);
