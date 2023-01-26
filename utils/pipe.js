@@ -301,12 +301,12 @@ function Pipe(blueprint) {
   
     pipeMethod.steps = getSteps;
     pipeMethod.step = getStep;
-    pipeMethod.data = function() {
-      const specialArgs = arguments;
-      return function() {
-        return pipeMethod(arguments, null, null, specialArgs);
-      };
-    }
+    // pipeMethod.data = function() {
+    //   const specialArgs = arguments;
+    //   return function() {
+    //     return pipeMethod(arguments, null, null, specialArgs);
+    //   };
+    // }
   
     if (pipeName != "run") {
       pipe._library.pipes[pipeName] = pipeMethod;
