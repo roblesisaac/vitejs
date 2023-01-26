@@ -13,7 +13,7 @@ export default new Pipe({
     user: (user) => [
       "fetchPermitForUser",
       // mongo.findOne_("permits", "user"),
-      // { log: "_output" }
+      { log: "_output" }
     ]
   }
 });
