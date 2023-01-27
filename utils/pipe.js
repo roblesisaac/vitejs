@@ -114,6 +114,7 @@ function Pipe(blueprint) {
         return;
       },
       method: function(memory, rabbitTrail, parentSpecial) {
+        console.log({ memory, rabbitTrail, parentSpecial });
         const { nextStep, handleError } = this;
   
         const method = pipe[methodName] || pipe._steps[methodName] || stepPrint,
@@ -212,6 +213,8 @@ function Pipe(blueprint) {
             ._import(data)
             ._addTools({ _step: this, next });
           
+          console.log({ method: method.toString() });
+
           method.apply(memory, args);
         } catch (error) {
           handleError(memory, error.toString());
