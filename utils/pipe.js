@@ -211,8 +211,6 @@ function Pipe(blueprint) {
           memory
             ._import(data)
             ._addTools({ _step: this, next });
-          
-          console.log({ method: method.toString() });
 
           method.apply(memory, args);
         } catch (error) {
