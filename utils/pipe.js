@@ -231,7 +231,7 @@ function Pipe(blueprint) {
       return buildSteps(stepsArr, pipe, pipeName);
     };
 
-    const pipeMethod = function(memory, parentSpecial, pipeIsForeign, specialArgs) {
+    function pipeMethod(memory, parentSpecial, pipeIsForeign, specialArgs) {
       const _args = arguments;
       
       function getMemory(_resolve, _rej, _pipeName) {
@@ -287,8 +287,9 @@ function Pipe(blueprint) {
     return pipeMethod;
   }
 
-  const assignPipe = function(instructions, pipe, pipeName) {
-    const method = buildPipeMethod(instructions, pipe, pipeName);  
+  const assignPipe = function(instruct, pipe, pipeName) {
+    const instructions = instruct[pipeName] || instruct,
+          method = buildPipeMethod(instructions, pipe, pipeName);  
     obj.assignNative(pipe, pipeName+"_", buildWithSpecialArgs(method));
     obj.assignNative(pipe, pipeName, method);
   };
@@ -319,7 +320,7 @@ function Pipe(blueprint) {
   }
 
   for (const vName in instruct) {
-    assignPipe(instruct[vName], this, vName);
+    assignPipe(instruct, this, vName);
   }
 }
 
