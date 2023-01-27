@@ -296,9 +296,9 @@ function Pipe(blueprint) {
   };
 
   const assignNativeKeys = (natives) => {
-    const assignNativeKey = (prop) => obj.assignNative(this, prop, natives[prop]);
-    
-    Object.keys(natives).forEach(assignNativeKey);
+    Object.keys(natives).forEach(prop => {
+      obj.assignNative(this, prop, natives[prop])
+    });
   }
 
   const _library = {
