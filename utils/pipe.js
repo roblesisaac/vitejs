@@ -5,26 +5,6 @@ import globalSteps from "./globalSteps.js";
 function Pipe(blueprint) {
   const instruct = blueprint.instruct;
 
-  const _library = {
-    pipes: {},
-    specials: ["if", "each", "setup"],
-    steps: globalSteps,
-    addGlobalSteps: function(steps) { 
-      Object.assign(this.steps, steps);
-    }
-  };
-
-  const natives = {
-    _blueprint: obj.copy(blueprint),
-    _catch: blueprint.catch ? obj.copy(blueprint.catch) : null,
-    _library,
-    _steps: Object.assign({}, _library.steps, blueprint.steps)
-  };
-
-  Object.keys(natives).forEach((prop) => {
-    obj.assignNative(this, prop, natives[prop]);
-  });
-
   const getStep = function(sIndex, args, steps) {
     steps = steps || this.steps(args);
     
@@ -315,6 +295,26 @@ function Pipe(blueprint) {
     obj.assignNative(pipe, pipeName+"_", buildWithSpecialArgs(pipeMethod));
     obj.assignNative(pipe, pipeName, pipeMethod);
   };
+
+  const _library = {
+    pipes: {},
+    specials: ["if", "each", "setup"],
+    steps: globalSteps,
+    addGlobalSteps: function(steps) {
+      Object.assign(this.steps, steps);
+    }
+  };
+
+  const natives = {
+    _blueprint: obj.copy(blueprint),
+    _catch: blueprint.catch ? obj.copy(blueprint.catch) : null,
+    _library,
+    _steps: Object.assign({}, _library.steps, blueprint.steps)
+  };
+
+  Object.keys(natives).forEach((prop) => {
+    obj.assignNative(this, prop, natives[prop]);
+  });
 
   if (!type.isObject(instruct)) {
     buildPipe(instruct, this, "run");
