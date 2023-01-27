@@ -46,7 +46,7 @@ function Pipe(blueprint) {
           
     const isSpecial = specials.includes(methodName),
         isFinalStep = stepsArr.length == index+1,
-        isVariation = !!pipe[methodName] || methodName == "pipeMethod";
+        isVariation = !!pipe[methodName] || methodName == "getPipe";
   
     const buildSub = function(index, sProp, instructs, previous) {
       instructs = instructs || stepsArr;
