@@ -287,12 +287,12 @@ function Pipe(blueprint) {
     return pipeMethod;
   }
 
-  const assignPipe = function(instruct, pipe, pipeName) {
+  const assignPipe = (instruct, pipeName) => {
     const instructions = instruct[pipeName] || instruct,
-          method = buildPipeMethod(instructions, pipe, pipeName);  
+          method = buildPipeMethod(instructions, this, pipeName);  
 
-    obj.assignNative(pipe, pipeName+"_", buildWithSpecialArgs(method));
-    obj.assignNative(pipe, pipeName, method);
+    obj.assignNative(this, pipeName+"_", buildWithSpecialArgs(method));
+    obj.assignNative(this, pipeName, method);
   };
 
   const assignNativeKeys = (natives) => {
@@ -314,12 +314,12 @@ function Pipe(blueprint) {
   });
 
   if (!type.isObject(instruct)) {
-    assignPipe(instruct, this, "run");
+    assignPipe(instruct, "run");
     return;
   }
 
   for (const vName in instruct) {
-    assignPipe(instruct, this, vName);
+    assignPipe(instruct, vName);
   }
 }
 
