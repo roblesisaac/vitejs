@@ -114,7 +114,6 @@ function Pipe(blueprint) {
         return;
       },
       method: function(memory, rabbitTrail, parentSpecial) {
-        console.log({ memory, rabbitTrail, parentSpecial });
         const { nextStep, handleError } = this;
   
         const method = pipe[methodName] || pipe._steps[methodName] || stepPrint,
@@ -283,7 +282,6 @@ function Pipe(blueprint) {
         return new Promise(function(_resolve, _rej) {
           const steps = getSteps(args);
           memory._addTools({ _resolve: [_resolve], _rej, pipeName, _args: [args] });
-          console.log(steps.method.toString());
           steps.method(memory);
         });
       };
