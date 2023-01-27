@@ -242,7 +242,7 @@ function Pipe(blueprint) {
         if(isMemory) {
           memory._resolve = _resolve.concat(memory._resolve);
               
-          if(pipeIsForeign || memory._args[1]) {
+          if(pipeIsForeign || memory._args[1] || specialArgs) {
             memory._absorb(pipe);
           }
           
