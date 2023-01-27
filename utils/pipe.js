@@ -231,43 +231,46 @@ function Pipe(blueprint) {
       return buildSteps(stepsArr, pipe, pipeName);
     };
     
-    class pipeMethod {
-      constructor(memory, parentSpecial, pipeIsForeign, specialArgs) {
-        const _args = arguments;
-
-        const getMemory = (_resolve, _rej, _pipeName) => {
-          _resolve = [_resolve];
-
-          if (memory && memory._isMemory) {
-            memory._resolve = _resolve.concat(memory._resolve);
-
-            if (pipeIsForeign || memory._args[1] || specialArgs) {
-              memory._absorb(pipe);
-            }
-
-            if (specialArgs) {
-              return memory._importSpecialArgs(instructions, specialArgs);
-            }
-
-            const argNames = getArgNames(instructions), subArgs = argNames.map(argName => memory[argName] || argName);
-
-            memory._args.unshift(subArgs);
-
-            return memory;
+    const pipeMethod = function(memory, parentSpecial, pipeIsForeign, specialArgs) {
+      const _args = arguments;
+      
+      const getMemory = (_resolve, _rej, _pipeName) => {
+        _resolve = [_resolve];
+        
+        if(memory && memory._isMemory) {
+          memory._resolve = _resolve.concat(memory._resolve);
+              
+          if(pipeIsForeign || memory._args[1] || specialArgs) {
+            memory._absorb(pipe);
           }
-
-          const tools = { _resolve, _rej, _pipeName, _args: [_args] }, userArgs = getArgs(instructions, _args);
-
-          return new Memory(pipe)._import(userArgs)._addTools(tools);
-        };
-
-        return new Promise(function (resolve, reject) {
-          const memry = getMemory(resolve, reject, pipeName), args = memry._args, arg = args[1] ? args.shift() : args[0], steps = getSteps(arg);
-
-          steps.method(memry, null, parentSpecial);
-        });
-      }
-    }
+          
+          if(specialArgs) {
+            return memory._importSpecialArgs(instructions, specialArgs);
+          }
+          
+          const argNames = getArgNames(instructions),
+              subArgs = argNames.map(argName => memory[argName] || argName);
+              
+          memory._args.unshift(subArgs);
+          
+          return memory;
+        }
+  
+        const tools = { _resolve, _rej, _pipeName, _args: [_args] },
+            userArgs = getArgs(instructions, _args);
+            
+        return new Memory(pipe)._import(userArgs)._addTools(tools);
+      };
+      
+      return new Promise(function(resolve, reject) {
+        const memry = getMemory(resolve, reject, pipeName),
+            args = memry._args,
+            arg = args[1] ? args.shift() : args[0],
+            steps = getSteps(arg);
+            
+        steps.method(memry, null, parentSpecial);
+      });
+    };
   
     pipeMethod.steps = getSteps;
     pipeMethod.step = getStep;
