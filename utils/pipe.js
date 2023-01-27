@@ -272,17 +272,6 @@ function Pipe(blueprint) {
 
     pipeMethod.steps = getSteps;
     pipeMethod.step = getStep;
-  // pipeMethod.data = function() {
-  //   const mem = new Memory(pipe)._import(arguments);
-  //   return new Promise(function(resolve, reject) {
-  //     const memry = getMemory(resolve, reject, pipeName),
-  //         args = memry._args,
-  //         arg = args[1] ? args.shift() : args[0],
-  //         steps = getSteps(arg);
-          
-  //     steps.method(memry, null, parentSpecial);
-  //   });
-  // }
 
     return pipeMethod;
   }
