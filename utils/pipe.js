@@ -240,7 +240,7 @@ function Pipe(blueprint) {
         if(memory && memory._isMemory) {
           memory._resolve = _resolve.concat(memory._resolve);
               
-          if(pipeIsForeign || memory._args[1] || specialArgs) {
+          if(pipeIsForeign || memory._args[1]) {
             memory._absorb(pipe);
           }
           
@@ -255,10 +255,10 @@ function Pipe(blueprint) {
           
           return memory;
         }
-  
-        const tools = { _resolve, _rej, _pipeName, _args: [_args] };
             
-        return new Memory(pipe)._importArgs(instructions, _args)._addTools(tools);
+        return new Memory(pipe)
+                    ._importArgs(instructions, _args)
+                    ._addTools({ _resolve, _rej, _pipeName, _args: [_args] });
       };
       
       return new Promise(function(resolve, reject) {
