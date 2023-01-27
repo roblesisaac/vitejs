@@ -225,13 +225,13 @@ function Pipe(blueprint) {
     }.init();
   };
 
-  const buildPipe = function(instructions, pipe, pipeName) {
+  const buildPipeMethod = function(instructions, pipe) {
     const getSteps = function(args) {
       const stepsArr = convert.toInstruct(instructions, args);
       return buildSteps(stepsArr, pipe, pipeName);
     };
     
-    const pipeMethod = function(memory, parentSpecial, pipeIsForeign, specialArgs) {
+    return function(memory, parentSpecial, pipeIsForeign, specialArgs) {
       const _args = arguments;
       
       const getMemory = (_resolve, _rej, _pipeName) => {
@@ -270,10 +270,13 @@ function Pipe(blueprint) {
         steps.method(memry, null, parentSpecial);
       });
     };
+  }
+
+  const assignPipe = function(instructions, pipe, pipeName) {
+    const method = buildPipeMethod(instructions, pipe);
   
-    pipeMethod.steps = getSteps;
-    pipeMethod.step = getStep;
-    // pipeMethod.data = function() {
+    method.step = getStep;
+    // method.data = function() {
     //   const mem = new Memory(pipe)._import(arguments);
     //   return new Promise(function(resolve, reject) {
     //     const memry = getMemory(resolve, reject, pipeName),
@@ -285,8 +288,8 @@ function Pipe(blueprint) {
     //   });
     // }
   
-    obj.assignNative(pipe, pipeName+"_", buildWithSpecialArgs(pipeMethod));
-    obj.assignNative(pipe, pipeName, pipeMethod);
+    obj.assignNative(pipe, pipeName+"_", buildWithSpecialArgs(method));
+    obj.assignNative(pipe, pipeName, method);
   };
 
   const _library = {
@@ -310,12 +313,12 @@ function Pipe(blueprint) {
   });
 
   if (!type.isObject(instruct)) {
-    buildPipe(instruct, this, "run");
+    assignPipe(instruct, this, "run");
     return;
   }
 
   for (const vName in instruct) {
-    buildPipe(instruct[vName], this, vName);
+    assignPipe(instruct[vName], this, vName);
   }
 }
 
