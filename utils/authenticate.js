@@ -6,7 +6,7 @@ export default new Pipe({
     fetchPermitForUser: function(res, next) {
       const filter = this.user;
 
-      mongo.findOne("permits", filter).then(next);
+      mongo.findOne("users", filter).then(next);
     }
   },
   instruct: {
