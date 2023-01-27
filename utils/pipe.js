@@ -224,6 +224,7 @@ function Pipe(blueprint) {
       }
     }.init();
   };
+  
 
   const buildPipe = function(instructions, pipe, pipeName) {
     const getSteps = function(args) {
@@ -271,7 +272,7 @@ function Pipe(blueprint) {
       });
     };
   
-    pipeMethod.steps = getSteps;
+    // pipeMethod.steps = getSteps;
     pipeMethod.step = getStep;
     // pipeMethod.data = function() {
     //   const mem = new Memory(pipe)._import(arguments);
