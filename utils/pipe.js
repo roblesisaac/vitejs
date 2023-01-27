@@ -290,10 +290,6 @@ function Pipe(blueprint) {
     //   };
     // }
   
-    if (pipeName != "run") {
-      pipe._library.pipes[pipeName] = pipeMethod;
-    }
-  
     obj.assignNative(pipe, pipeName+"_", buildWithSpecialArgs(pipeMethod));
     obj.assignNative(pipe, pipeName, pipeMethod);
   };
