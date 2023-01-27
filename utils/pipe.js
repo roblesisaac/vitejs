@@ -271,14 +271,17 @@ function Pipe(blueprint) {
         });
       }
 
-      get steps() {
-        return getSteps;
-      }
+      // get steps() {
+      //   return getSteps;
+      // }
 
-      get step() {
-        return getStep;
-      }
+      // get step() {
+      //   return getStep;
+      // }
     }
+
+    pipeMethod.steps = getSteps;
+    pipeMethod.step = getStep;
     // pipeMethod.data = function() {
     //   const mem = new Memory(pipe)._import(arguments);
     //   return new Promise(function(resolve, reject) {
