@@ -225,51 +225,49 @@ function Pipe(blueprint) {
     }.init();
   };
 
-  const getPipe = function(instructions, pipe, pipeName) {
+  const buildPipeMethod = function(instructions, pipe, pipeName) {
     const getSteps = function(args) {
       const stepsArr = convert.toInstruct(instructions, args);
       return buildSteps(stepsArr, pipe, pipeName);
     };
 
-    const pipeMethod = function(memory, parentSpecial, pipeIsForeign, specialArgs) {
-      const _args = arguments;
-      
-      const getMemory = (_resolve, _rej, _pipeName) => {
-        _resolve = [_resolve];
-        
-        if(memory && memory._isMemory) {
-          memory._resolve = _resolve.concat(memory._resolve);
-              
-          if(pipeIsForeign || memory._args[1]) {
-            memory._absorb(pipe);
+    class pipeMethod {
+      constructor(memory, parentSpecial, pipeIsForeign, specialArgs) {
+        const _args = arguments;
+
+        const getMemory = (_resolve, _rej, _pipeName) => {
+          _resolve = [_resolve];
+
+          if (memory && memory._isMemory) {
+            memory._resolve = _resolve.concat(memory._resolve);
+
+            if (pipeIsForeign || memory._args[1]) {
+              memory._absorb(pipe);
+            }
+
+            if (specialArgs) {
+              return memory._importSpecialArgs(instructions, specialArgs);
+            }
+
+            const argNames = getArgNames(instructions), subArgs = argNames.map(argName => memory[argName] || argName);
+
+            memory._args.unshift(subArgs);
+
+            return memory;
           }
-          
-          if(specialArgs) {
-            return memory._importSpecialArgs(instructions, specialArgs);
-          }
-          
-          const argNames = getArgNames(instructions),
-              subArgs = argNames.map(argName => memory[argName] || argName);
-              
-          memory._args.unshift(subArgs);
-          
-          return memory;
-        }
-            
-        return new Memory(pipe)
-                    ._importArgs(instructions, _args)
-                    ._addTools({ _resolve, _rej, _pipeName, _args: [_args] });
-      };
-      
-      return new Promise(function(resolve, reject) {
-        const memry = getMemory(resolve, reject, pipeName),
-            args = memry._args,
-            arg = args[1] ? args.shift() : args[0],
-            steps = getSteps(arg);
-            
-        steps.method(memry, null, parentSpecial);
-      });
-    };
+
+          return new Memory(pipe)
+            ._importArgs(instructions, _args)
+            ._addTools({ _resolve, _rej, _pipeName, _args: [_args] });
+        };
+
+        return new Promise(function (resolve, reject) {
+          const memry = getMemory(resolve, reject, pipeName), args = memry._args, arg = args[1] ? args.shift() : args[0], steps = getSteps(arg);
+
+          steps.method(memry, null, parentSpecial);
+        });
+      }
+    }
 
     pipeMethod.steps = getSteps;
     pipeMethod.step = getStep;
@@ -285,13 +283,13 @@ function Pipe(blueprint) {
     //   });
     // }
 
-    return pipeMethod;
+    return new pipeMethod();
   }
 
   const assignPipe = function(instructions, pipe, pipeName) {
-    const pipeMethod = getPipe(instructions, pipe, pipeName);  
-    obj.assignNative(pipe, pipeName+"_", buildWithSpecialArgs(pipeMethod));
-    obj.assignNative(pipe, pipeName, pipeMethod);
+    const method = buildPipeMethod(instructions, pipe, pipeName);  
+    obj.assignNative(pipe, pipeName+"_", buildWithSpecialArgs(method));
+    obj.assignNative(pipe, pipeName, method);
   };
 
   const _library = {
