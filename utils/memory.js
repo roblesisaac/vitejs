@@ -76,16 +76,12 @@ export default function Memory(pipe) {
     return this;
   },
   _importSpecialArgs = function(instructions, specialArgs) {
-    const { _args } = this,
-    getArgDataForEach = (arg) => {
-      const special =  obj.deep(this, arg) || arg;
-      console.log({ arg, special });
-      return special;
-    },
-    getSpecialArgs = () => Array.from(specialArgs).map(getArgDataForEach);
+    const getArgDataForEach = arg => obj.deep(this, arg) || arg,
+          specials = Array.from(specialArgs).map(getArgDataForEach);
 
-    _args.unshift(getSpecialArgs());
-    return this;
+    this._args.unshift(specials);
+
+    return this._import(getArgs(instructions, specials));
   },
   _import = function() {
     if(!arguments.length) return this;
