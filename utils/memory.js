@@ -76,8 +76,7 @@ export default function Memory(pipe) {
     return this;
   },
   _importArgs = function(instructions, args) {
-    getArgs(instructions, args);
-    return this;
+    return this._import(getArgs(instructions, args));
   },
   _importSpecialArgs = function(instructions, specialArgs) {
     const getArgDataForEach = arg => obj.deep(this, arg) || arg,

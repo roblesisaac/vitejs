@@ -59,7 +59,7 @@ export default new Pipe({
         params: req.params,
         collection: "params.component"
       },
-      { user: { name: "oak" } },
+      { user: { name: "isaac" } },
       authenticate.user
     ],
     deleteOne: (req, res) => [
