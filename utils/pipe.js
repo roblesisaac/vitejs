@@ -283,7 +283,6 @@ function Pipe(blueprint) {
         return new Promise(function(_resolve, _rej) {
           const steps = getSteps(args);
           memory._addTools({ _resolve, _rej, pipeName, _args: [args] });
-          console.log({ steps });
           steps.method(memory, null, parentSpecial);
         });
       };
