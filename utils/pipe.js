@@ -225,7 +225,7 @@ function Pipe(blueprint) {
     }.init();
   };
 
-  const buildPipeMethod = function(instructions, pipe) {
+  const buildPipeMethod = function(instructions, pipe, pipeName) {
     const getSteps = function(args) {
       const stepsArr = convert.toInstruct(instructions, args);
       return buildSteps(stepsArr, pipe, pipeName);
@@ -273,7 +273,7 @@ function Pipe(blueprint) {
   }
 
   const assignPipe = function(instructions, pipe, pipeName) {
-    const method = buildPipeMethod(instructions, pipe);
+    const method = buildPipeMethod(instructions, pipe, pipeName);
   
     method.step = getStep;
     // method.data = function() {
