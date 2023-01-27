@@ -280,7 +280,7 @@ function Pipe(blueprint) {
         return new Promise(function(_resolve, _rej) {
           const steps = getSteps(args);
           memory._addTools({ _resolve, _rej, pipeName, _args: [args] });
-          console.log({ memory, steps }); 
+          console.log("firing", JSON.stringify(steps.method)); 
           steps.method(memory, null, parentSpecial);
         });
       };
