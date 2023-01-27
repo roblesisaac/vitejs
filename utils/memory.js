@@ -1,4 +1,4 @@
-import { convert, obj, type } from "./utils.js";
+import { convert, obj, type, getArgNames, getArgs, } from "./utils.js";
 
 export default function Memory(pipe) {
   const _absorb = function(pipe) {
@@ -75,6 +75,13 @@ export default function Memory(pipe) {
     
     return this;
   },
+  _importSpecialArgs = function(instructions, specialArgs) {
+    const { _args } = this,
+    getArgDataForEach = arg => obj.deep(this, arg) || arg,
+    getSpecialArgs = () => Array.from(specialArgs).map(getArgDataForEach);
+
+    _args.unshift(getSpecialArgs());  
+  },
   _import = function() {
     if(!arguments.length) return this;
     
@@ -104,7 +111,7 @@ export default function Memory(pipe) {
     return this;
   };
 
-  const _natives = { _absorb, _learn, _import, _addTools };
+  const _natives = { _absorb, _learn, _import, _importSpecialArgs, _addTools };
 
   for(const native in _natives) {
     obj.assignNative(this, native, _natives[native]);

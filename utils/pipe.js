@@ -247,12 +247,7 @@ function Pipe(blueprint) {
           }
           
           if(specialArgs) {
-            specialArgs = Array.from(specialArgs).map(arg => obj.deep(memory, arg) || arg);
-            memory._args.unshift(specialArgs);
-  
-            const userArgs = getArgs(instructions, specialArgs);
-            
-            return memory._absorb(pipe)._import(userArgs);
+            return memory._importSpecialArgs(instructions, specialArgs);
           }
           
           const argNames = getArgNames(instructions),
@@ -284,7 +279,14 @@ function Pipe(blueprint) {
     // pipeMethod.data = function() {
     //   const mem = new Memory(pipe)._import(arguments);
     //   return function() {
-    //     return pipeMethod(arguments, null, null, specialArgs);
+    //           return new Promise(function(resolve, reject) {
+    //     const memry = getMemory(resolve, reject, pipeName),
+    //         args = memry._args,
+    //         arg = args[1] ? args.shift() : args[0],
+    //         steps = getSteps(arg);
+            
+    //     steps.method(memry, null, parentSpecial);
+    //   });
     //   };
     // }
   
