@@ -224,15 +224,14 @@ function Pipe(blueprint) {
       }
     }.init();
   };
-  
 
-  const buildPipe = function(instructions, pipe, pipeName) {
+  const getPipe = function(instructions, pipe, pipeName) {
     const getSteps = function(args) {
       const stepsArr = convert.toInstruct(instructions, args);
       return buildSteps(stepsArr, pipe, pipeName);
     };
-    
-    const pipeMethod = function(memory, parentSpecial, pipeIsForeign, specialArgs) {
+
+    return function(memory, parentSpecial, pipeIsForeign, specialArgs) {
       const _args = arguments;
       
       const getMemory = (_resolve, _rej, _pipeName) => {
@@ -271,7 +270,10 @@ function Pipe(blueprint) {
         steps.method(memry, null, parentSpecial);
       });
     };
-  
+  }
+
+  const buildPipe = function(instructions, pipe, pipeName) {
+    const pipeMethod = getPipe(instructions, pipe, pipeName);
     // pipeMethod.steps = getSteps;
     pipeMethod.step = getStep;
     // pipeMethod.data = function() {
