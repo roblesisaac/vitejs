@@ -296,7 +296,7 @@ function Pipe(blueprint) {
     obj.assignNative(pipe, pipeName, pipeMethod);
   };
 
-  //
+  console.log("hi");
   const _library = {
     pipes: {},
     specials: ["if", "each", "setup"],
