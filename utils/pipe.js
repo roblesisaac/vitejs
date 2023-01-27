@@ -231,7 +231,7 @@ function Pipe(blueprint) {
       return buildSteps(stepsArr, pipe, pipeName);
     };
 
-    return function pipeMethod(memory, parentSpecial, pipeIsForeign, specialArgs) {
+    const pipeMethod = function(memory, parentSpecial, pipeIsForeign, specialArgs) {
       const _args = arguments;
       
       function getMemory(_resolve, _rej, _pipeName) {
@@ -260,7 +260,7 @@ function Pipe(blueprint) {
           ._addTools({ _resolve, _rej, _pipeName, _args: [_args] });
       }
       
-      const promise = new Promise(function(resolve, reject) {
+      return new Promise(function(resolve, reject) {
         const memry = getMemory(resolve, reject, pipeName),
             args = memry._args,
             arg = args[1] ? args.shift() : args[0],
@@ -268,23 +268,23 @@ function Pipe(blueprint) {
             
         steps.method(memry, null, parentSpecial);
       });
-
-      promise.steps = getSteps;
-      promise.step = getStep;
-    // pipeMethod.data = function() {
-    //   const mem = new Memory(pipe)._import(arguments);
-    //   return new Promise(function(resolve, reject) {
-    //     const memry = getMemory(resolve, reject, pipeName),
-    //         args = memry._args,
-    //         arg = args[1] ? args.shift() : args[0],
-    //         steps = getSteps(arg);
-            
-    //     steps.method(memry, null, parentSpecial);
-    //   });
-    // }
-
-      return promise;
     };
+
+    pipeMethod.steps = getSteps;
+    pipeMethod.step = getStep;
+  // pipeMethod.data = function() {
+  //   const mem = new Memory(pipe)._import(arguments);
+  //   return new Promise(function(resolve, reject) {
+  //     const memry = getMemory(resolve, reject, pipeName),
+  //         args = memry._args,
+  //         arg = args[1] ? args.shift() : args[0],
+  //         steps = getSteps(arg);
+          
+  //     steps.method(memry, null, parentSpecial);
+  //   });
+  // }
+
+    return pipeMethod;
   }
 
   const assignPipe = function(instructions, pipe, pipeName) {
