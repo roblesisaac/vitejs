@@ -270,14 +270,6 @@ function Pipe(blueprint) {
           steps.method(memry, null, parentSpecial);
         });
       }
-
-      // get steps() {
-      //   return getSteps;
-      // }
-
-      // get step() {
-      //   return getStep;
-      // }
     }
 
     pipeMethod.steps = getSteps;
