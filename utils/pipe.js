@@ -272,13 +272,25 @@ function Pipe(blueprint) {
 
     pipeMethod.steps = getSteps;
     pipeMethod.step = getStep;
+    pipeMethod._data = function() {
+      const memory = new Memory(pipe)._imort(arguments);
+      return function() {
+        const args = arguments;
+        memory._importArgs(instructions, args);
+        return new Promise(function(_resolve, _rej) {
+          const steps = getSteps(args);
+          memory._addTools({ _resolve, _rej, pipeName, _args: [args] })    
+          steps.method(memory, null, parentSpecial);
+        });
+      };
+    };
 
     return pipeMethod;
   }
 
   const assignPipe = (instruct, pipeName) => {
     const instructions = instruct[pipeName] || instruct,
-          method = buildPipeMethod(instructions, this, pipeName);  
+          method = buildPipeMethod(instructions, this, pipeName);
 
     obj.assignNative(this, pipeName+"_", buildWithSpecialArgs(method));
     obj.assignNative(this, pipeName, method);
