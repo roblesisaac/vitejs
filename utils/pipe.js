@@ -256,10 +256,9 @@ function Pipe(blueprint) {
           return memory;
         }
   
-        const tools = { _resolve, _rej, _pipeName, _args: [_args] },
-            userArgs = getArgs(instructions, _args);
+        const tools = { _resolve, _rej, _pipeName, _args: [_args] };
             
-        return new Memory(pipe)._import(userArgs)._addTools(tools);
+        return new Memory(pipe)._importArgs(instructions, _args)._addTools(tools);
       };
       
       return new Promise(function(resolve, reject) {
