@@ -290,28 +290,27 @@ function Pipe(blueprint) {
   const assignPipe = function(instruct, pipe, pipeName) {
     const instructions = instruct[pipeName] || instruct,
           method = buildPipeMethod(instructions, pipe, pipeName);  
+
     obj.assignNative(pipe, pipeName+"_", buildWithSpecialArgs(method));
     obj.assignNative(pipe, pipeName, method);
   };
 
+  const assignNativeKeys = (natives) => {
+    const assignNativeKey = (prop) => obj.assignNative(this, prop, natives[prop]);
+    
+    Object.keys(natives).forEach(assignNativeKey);
+  }
+
   const _library = {
-    pipes: {},
     specials: ["if", "each", "setup"],
-    steps: globalSteps,
-    addGlobalSteps: function(steps) {
-      Object.assign(this.steps, steps);
-    }
+    steps: globalSteps
   };
 
-  const natives = {
+  assignNativeKeys({
     _blueprint: obj.copy(blueprint),
     _catch: blueprint.catch ? obj.copy(blueprint.catch) : null,
     _library,
     _steps: Object.assign({}, _library.steps, blueprint.steps)
-  };
-
-  Object.keys(natives).forEach((prop) => {
-    obj.assignNative(this, prop, natives[prop]);
   });
 
   if (!type.isObject(instruct)) {
