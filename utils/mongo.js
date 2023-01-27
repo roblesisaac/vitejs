@@ -153,6 +153,7 @@ export default new Pipe({
   catch: function(error) {
     let { res, settings } = this;
     settings = settings || {};
+    res = res || {};
     
     if(res || settings.res) {
       const respond = res || settings.res;
