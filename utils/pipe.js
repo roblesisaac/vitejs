@@ -284,7 +284,7 @@ function Pipe(blueprint) {
           const steps = getSteps(args);
           memory._addTools({ _resolve: [_resolve], _rej, pipeName, _args: [args] });
           console.log(steps.method.toString());
-          steps.method(memory, null, parentSpecial);
+          steps.method(memory);
         });
       };
     };
