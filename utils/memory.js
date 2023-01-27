@@ -112,7 +112,7 @@ export default function Memory(pipe) {
     return this;
   };
 
-  const _natives = { _absorb, _learn, _import, _importSpecialArgs, _addTools };
+  const _natives = { _absorb, _learn, _import, _importSpecialArgs, _addTools, _isMemory: true };
 
   for(const native in _natives) {
     obj.assignNative(this, native, _natives[native]);
