@@ -9,17 +9,16 @@ export default function Memory(pipe) {
       if (!rawData) return;
     
       const define = (prop, definer) => {
+        definer.enumerable = true;
         Object.defineProperty(assignee, prop, definer);
       },
       defineGetterMethod = (value, prop) => {
         define(prop, {
-          enumerable: true,
           get: value.bind(this)
         });
       },
       getAndSetFromPipe = (prop) => {
         define(prop, {
-          enumerable: true,
           get: () => pipe[prop],
           set: (newValue) => pipe[prop] = newValue
         });
