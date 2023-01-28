@@ -1,7 +1,7 @@
 import { convert, obj, type, getArgNames, getArgs } from "./utils.js";
 
 export default function Memory(pipe) {
-  const _absorb = function(pipe) {
+  const _absorb = (pipe) => {
     const bluePrnt = pipe._blueprint,
         format = data => obj.copy(convert.toObject(data || {}, pipe));
     
