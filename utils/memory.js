@@ -29,11 +29,11 @@ export default function Memory(pipe) {
       const assignProp = (prop) => {
         const value = data[prop];
     
-        if (prop in assignee) {
+        if (assignee.hasOwnProperty(prop)) {
           return;
         };
     
-        if (prop in pipe) {
+        if (pipe.hasOwnProperty(prop)) {
           getAndSetFromPipe(prop);
           return;
         }
