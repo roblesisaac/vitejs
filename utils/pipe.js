@@ -248,11 +248,7 @@ function Pipe(blueprint) {
             return memory._importSpecialArgs(instructions, specialArgs);
           }
 
-          const argNames = getArgNames(instructions), subArgs = argNames.map(argName => memory[argName] || argName);
-
-          memory._args.unshift(subArgs);
-
-          return memory;
+          return memory._unshiftArgs(instructions);
         }
 
         return new Memory(pipe)

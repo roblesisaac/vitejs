@@ -113,13 +113,31 @@ export default function Memory(pipe) {
     }
   
     return this;
+  },
+  _unshiftArgs = function(instructions) {
+    const argNames = getArgNames(instructions),
+          getArg = argName => this[argName] || argName,
+          getSubArgs = () => argNames.map(getArg);
+
+    this._args.unshift(getSubArgs());
+    return this;
+  },
+  assignNativeMemories = (natives) => {
+    for(const native in natives) {
+      obj.assignNative(this, native, natives[native]);
+    }
   };
 
-  const _natives = { _absorb, _learn, _import, _importArgs, _importSpecialArgs, _addTools, _isMemory: true };
-
-  for(const native in _natives) {
-    obj.assignNative(this, native, _natives[native]);
-  }
+  assignNativeMemories({ 
+    _absorb, 
+    _learn, 
+    _import, 
+    _importArgs, 
+    _importSpecialArgs, 
+    _addTools,
+    _unshiftArgs,
+    _isMemory: true 
+  });
 
   this._absorb(pipe);
 }
