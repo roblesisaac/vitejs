@@ -4,7 +4,7 @@ export default {
   "&": function(lastCondition) {
     if (!this._conditions) {
       this._addTools({
-        conditions: [lastCondition]
+        _conditions: [lastCondition]
       });
     }
   },
@@ -76,7 +76,7 @@ export default {
     getData.method(this, loopThruData);
   },
   end: function (message) {
-    this._addTools({ endAll: true });
+    this._addTools({ _endAll: true });
     this.next(message);
   },
   error: function(error) {
