@@ -138,5 +138,5 @@ export default function Memory(pipe) {
     _isMemory: true 
   });
 
-  _absorb(pipe);
+  return _absorb(pipe);
 }
