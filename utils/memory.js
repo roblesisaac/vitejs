@@ -108,7 +108,7 @@ export default function Memory(pipe) {
     };
   
     for (const prop in data) {
-      const _prop = prop == "next" ? prop ? "_"+prop;
+      const _prop = prop == "next" ? prop : "_"+prop;
       Object.defineProperty(this, _prop, config(_prop));
     }
   
