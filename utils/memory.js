@@ -121,13 +121,13 @@ export default function Memory(pipe) {
     this._args.unshift(getSubArgs());
     return this;
   },
-  assignNativeMemories = (natives) => {
+  assignNativeToMemory = (natives) => {
     for(const native in natives) {
       obj.assignNative(this, native, natives[native]);
     }
   };
 
-  assignNativeMemories({ 
+  assignNativeToMemory({ 
     _absorb, 
     _learn, 
     _import, 
