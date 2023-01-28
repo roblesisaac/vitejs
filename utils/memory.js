@@ -138,5 +138,5 @@ export default function Memory(pipe) {
     _isMemory: true 
   });
 
-  this._absorb(pipe);
+  _absorb(pipe);
 }
