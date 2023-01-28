@@ -268,12 +268,12 @@ function Pipe(blueprint) {
 
     pipeMethod.steps = getSteps;
     pipeMethod.step = getStep;
-    pipeMethod._data = function(...firstArgs) {
-      const memory = new Memory(pipe)._import(...firstArgs);
-      return function() {
-        const args = arguments;
+    pipeMethod._data = function() {
+      const memory = new Memory(pipe)._import(...arguments);
+
+      return (...args) => {
         memory._importArgs(instructions, args);
-        return new Promise(function(_resolve, _rej) {
+        return new Promise((_resolve, _rej) => {
           const steps = getSteps(args);
           memory._addTools({ _resolve: [_resolve], _rej, pipeName, _args: [args] });
           steps.method(memory);
