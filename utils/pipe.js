@@ -257,9 +257,8 @@ function Pipe(blueprint) {
       }
       
       return new Promise(function(resolve, reject) {
-        const memry = getMemory(resolve, reject);
-        console.log({ args: memry._args });
-        const args = memry._args,
+        const memry = getMemory(resolve, reject),
+            args = memry._args,
             arg = args[1] ? args.shift() : args[0],
             steps = getSteps(arg);
             
