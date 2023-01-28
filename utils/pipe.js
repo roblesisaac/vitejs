@@ -210,7 +210,7 @@ function Pipe(blueprint) {
         try {
           memory
             ._import(data)
-            ._addTools({ _step: this, next });
+            ._addTools({ step: this, next });
 
           method.apply(memory, args);
         } catch (error) {
@@ -232,13 +232,13 @@ function Pipe(blueprint) {
     };
 
     function pipeMethod(memory, parentSpecial, pipeIsForeign, specialArgs) {
-      const _args = arguments;
+      const args = arguments;
       
-      function getMemory(_resolve, _rej, _pipeName) {
-        _resolve = [_resolve];
+      function getMemory(resolve, rej, pipeName) {
+        resolve = [resolve];
 
         if (memory && memory._isMemory) {
-          memory._resolve = _resolve.concat(memory._resolve);
+          memory._resolve = resolve.concat(memory._resolve);
 
           if (pipeIsForeign || memory._args[1]) {
             memory._absorb(pipe);
@@ -252,8 +252,8 @@ function Pipe(blueprint) {
         }
 
         return new Memory(pipe)
-          ._importArgs(instructions, _args)
-          ._addTools({ _resolve, _rej, _pipeName, _args: [_args] });
+          ._importArgs(instructions, args)
+          ._addTools({ resolve, rej, pipeName, args: [args] });
       }
       
       return new Promise(function(resolve, reject) {
@@ -273,9 +273,9 @@ function Pipe(blueprint) {
 
       return (...args) => {
         memory._importArgs(instructions, args);
-        return new Promise((_resolve, _rej) => {
+        return new Promise((resolve, rej) => {
           const steps = getSteps(args);
-          memory._addTools({ _resolve: [_resolve], _rej, pipeName, _args: [args] });
+          memory._addTools({ resolve: [resolve], rej, pipeName, args: [args] });
           steps.method(memory);
         });
       };
