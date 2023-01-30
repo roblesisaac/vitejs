@@ -271,6 +271,8 @@ function Pipe(blueprint) {
     pipeMethod._data = function() {
       const memory = new Memory(pipe)._import(...arguments);
 
+      console.log("hi");
+
       return (...args) => pipeMethod(memory, null, null, args);
     };
 
