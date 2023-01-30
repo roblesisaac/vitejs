@@ -13,19 +13,6 @@ function Pipe(blueprint) {
       : getStep(sIndex, args, steps.nextStep() || { missingIndex: sIndex });
   };
 
-  const buildWithSpecialArgs = function(pipeMethod) {
-    return function() {
-      const specialArgs = arguments;
-      
-      return function (res, next) {
-        const { _step } = this,
-            { specialProp, pipe, methodName } = _step;
-        
-        pipeMethod(this, specialProp, !!pipe[methodName], specialArgs).then(next);
-      };
-    };
-  };
-
   const buildSteps = function(stepsArr, pipe, pipeName, prev, stepIndex, specialProp) {
     if (!stepsArr || !stepsArr.length || stepIndex == stepsArr.length) {
       return;
@@ -223,6 +210,19 @@ function Pipe(blueprint) {
         }
       }
     }.init();
+  };
+
+  const buildWithSpecialArgs = function(pipeMethod) {
+    return function() {
+      const specialArgs = arguments;
+      
+      return function (res, next) {
+        const { _step } = this,
+            { specialProp, pipe, methodName } = _step;
+        
+        pipeMethod(this, specialProp, !!pipe[methodName], specialArgs).then(next);
+      };
+    };
   };
 
   const buildPipeMethod = function(instructions, pipe, pipeName) {
