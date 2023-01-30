@@ -272,15 +272,9 @@ function Pipe(blueprint) {
       const memory = new Memory(pipe)._import(...arguments);
 
       return (...args) => {
-        memory._importArgs(instructions, args);
+        // memory._importArgs(instructions, args);
 
         return pipeMethod(memory, null, null, args);
-
-        // return new Promise((resolve, rej) => {
-        //   const steps = getSteps(args);
-        //   memory._addTools({ resolve: [resolve], rej, pipeName, args: [args] });
-        //   steps.method(memory);
-        // });
       };
     };
 
