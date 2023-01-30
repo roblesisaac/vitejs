@@ -81,6 +81,7 @@ export default function Memory(pipe) {
     const getArgDataForEach = arg => obj.deep(this, arg) || arg,
           specials = Array.from(specialArgs).map(getArgDataForEach);
 
+    this._args = this._args || [];
     this._args.unshift(specials);
 
     return this._import(getArgs(instructions, specials));
