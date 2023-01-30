@@ -70,8 +70,10 @@ function Pipe(blueprint) {
         return this;
       },
       firstStep: function() {
-        return this.prev ?
-          this.prev.firstStep() :
+        const { prev } = this;
+
+        return prev ?
+          prev.firstStep.call(prev) :
           this;
       },
       nextStep: function() {
@@ -108,13 +110,15 @@ function Pipe(blueprint) {
             updater = theSpecialProp == "if" ? "_condition" : "_args";
             
         const relayLast = function(args) {
+          const output = args[0];
+          
           if (theSpecialProp && memory._conditions) {
-            memory._conditions.push(args[0]);
+            memory._conditions.push(output);
             return;
           }
           
           memory[updater] = Array.from(args);
-          if(updater == "_args") memory._output = args[0];
+          if(updater == "_args") memory._output = output;
         };
         
         const resolvePromise = function(output=[]) {      
@@ -136,21 +140,21 @@ function Pipe(blueprint) {
           }
           
           nextStep.call(this).method(memory, rabbitTrail, parentSpecial);
-        };
+        }.bind(this)
   
-        const learnAndProceed = function(res) {
+        const _learn = function(res) {
           memory._learn(res);
           next(res);
         };
   
-        const setupArgs = () => {
+        const setupArgs = function() {
           let arr = isObj && !isSpecial 
                 ? stepPrint[methodName]
                 : memory[updater];
                 
           arr = convert.toArray(arr);
           
-          return arr.concat([next, learnAndProceed]);
+          return arr.concat([next, _learn]);
         };
   
         const stepData = function() {
@@ -197,7 +201,7 @@ function Pipe(blueprint) {
         try {
           memory
             ._import(data)
-            ._addTools({ step: this, next });
+            ._addTools({ step: this, next, _learn });
 
           method.apply(memory, args);
         } catch (error) {
