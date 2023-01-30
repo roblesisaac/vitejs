@@ -274,7 +274,11 @@ function Pipe(blueprint) {
       return (...args) => {
         memory._importArgs(instructions, args);
 
-        return pipeMethod(memory, null, null, args);
+        const method = pipeMethod(memory, undefined, undefined, args);
+
+        console.log({ method });
+
+        return method;
 
         // return new Promise((resolve, rej) => {
         //   const steps = getSteps(args);
