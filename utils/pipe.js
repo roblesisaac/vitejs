@@ -59,12 +59,12 @@ function Pipe(blueprint) {
         }
         
         const special = this[methodName] = {},
-              specialInstructions = specialArr => convert.toArray(specialArr).flat();
+              formatSpecialInstructions = specialArr => convert.toArray(specialArr).flat();
 
         Object.keys(stepPrint).forEach((sProp) => {
-          const specialInstruct = specialInstructions(stepPrint[sProp]);
+          const formattedInstructions = formatSpecialInstructions(stepPrint[sProp]);
           
-          special[sProp] = buildSub(0, sProp, specialInstruct, prev);
+          special[sProp] = buildSub(0, sProp, formattedInstructions, prev);
         });
   
         return this;
@@ -73,7 +73,7 @@ function Pipe(blueprint) {
         const { prev } = this;
 
         return prev ?
-          prev.firstStep.call(prev) :
+          prev.firstStep() :
           this;
       },
       nextStep: function() {
@@ -118,7 +118,7 @@ function Pipe(blueprint) {
           }
           
           memory[updater] = Array.from(args);
-          if(updater == "_args") memory._output = output;
+          if(updater == "_args") memory._addTools({ output });
         };
         
         const resolvePromise = function(output=[]) {      
