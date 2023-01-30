@@ -44,7 +44,7 @@ export default function (schema, subject) {
             break;
         }
       } else if (subject.hasOwnProperty(key) && subject[key].constructor !== (schema[key].value || schema[key])) {
-        return err(`Invalid type for property ${key}. Expected ${(schema[key].value || schema[key]).name} but got ${subject[key]} which is a ${subject[key].constructor.name}`)
+        return err(`Invalid type for property ${key}. Expected ${(schema[key].value || schema[key]).name} but got '${subject[key]}' which is a ${subject[key].constructor.name}`)
       }
     }
     return subject;
