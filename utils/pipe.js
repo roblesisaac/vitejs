@@ -271,8 +271,8 @@ function Pipe(blueprint) {
     pipeMethod._data = function() {
       const memory = new Memory(pipe)._import(...arguments);
 
-      return (...args) => {
-        memory._importArgs(instructions, args);
+      return function() {
+        memory._importArgs(instructions, arguments);
         return new Promise((resolve, rej) => {
           const steps = getSteps(args);
           memory._addTools({ resolve: [resolve], rej, pipeName, args: [args] });
