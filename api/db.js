@@ -59,8 +59,8 @@ export default new Pipe({
         params: req.params,
         collection: "params.component"
       },
-      { user: { name: "isaac" } },
-      authenticate.user
+      // { user: { name: "isaac" } },
+      authenticate.user._data({ name: "isaac12" })
     ],
     deleteOne: (req, res) => [
       "_setup", "mongoDeleteOne", "serve"
