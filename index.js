@@ -5,7 +5,7 @@ import db from "./api/db.js";
 
 http.on(404, "index.html");
 
-const test = db.get;
+const test = db.find;
 
 //db
 const endpoint = "/:component/db/";
