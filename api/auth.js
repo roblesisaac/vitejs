@@ -5,8 +5,8 @@ import { Strategy }  from "passport-google-oauth20";
 import { params } from "@serverless/cloud";
 
 export default async (req, res, api) => {
-  // api.use(passport.initialize());
-  // api.use(passport.session());
+  api.use(passport.initialize());
+  api.use(passport.session());
 
   const respond = output => res.json(output);
 
