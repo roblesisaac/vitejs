@@ -33,8 +33,6 @@ export default async (req, res, api) => {
 
   passport.authenticate('google', { scope: ['profile'] });
 
-  res.json({ passport });
-
   // mongo.insert._import({ res, req })("users", { name: 12 })
   //   .then(respond)
   //   .catch(respond);
