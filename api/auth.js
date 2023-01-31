@@ -3,6 +3,11 @@ import { Strategy }  from "passport-google-oauth20";
 import { api, params } from "@serverless/cloud";
 import session from "express-session";
 
+api.get("/:component/jsonData", (req, res) => {
+  res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+  res.json([{ data: "item" }]);
+});
+
 api.use(session({
   secret: 'secret',
   resave: false,
@@ -30,7 +35,6 @@ passport.deserializeUser((obj, cb) => {
 });
 
 const noCache = function(req, res, next) {
-  console.log("Not caching!!!");
   res.header("Cache-Control", "no-cache, no-store, must-revalidate");
   res.header("Pragma", "no-cache");
   res.header("Expires", 0);

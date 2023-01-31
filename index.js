@@ -18,16 +18,6 @@ api.post(endpoint, (req, res) => db.insert(req, res));
 api.delete(endpoint+":id", (req, res) => db.deleteOne(req, res));
 api.delete(endpoint, (req, res) => db.deleteMany(req, res));
 
-
-// //auth
-// api.get("/:component/auth", function(req, res) {
-//   auth(req, res, api);
-// });
-
-api.get("/auth/google/callback", function(req, res) {
-  res.json("callback fired");
-});
-
 // Catch all for missing API routes
 api.get("/:component/api/*", (req, res) => {
   console.log(`404 - api`);
