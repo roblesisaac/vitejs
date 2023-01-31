@@ -1,6 +1,13 @@
 import passport from "passport";
 import { Strategy }  from "passport-google-oauth20";
 import { api, params } from "@serverless/cloud";
+import session from "express-session";
+
+api.use(session({
+  secret: 'secret',
+  resave: false,
+  saveUninitialized: false
+}));
 
 passport.use(
   new Strategy({
@@ -24,7 +31,7 @@ passport.deserializeUser((obj, cb) => {
 
 api.get('/:component/auth/google', passport.initialize(), passport.session(), passport.authenticate('google', { scope: ['email'] }));
 
-//Define the endpoint for handling the callback from Google
+// Define the endpoint for handling the callback from Google
 api.get('/:component/auth/google/callback', passport.authenticate('google', { failureRedirect: '/login' }), (req, res) => {
   res.redirect('/');
 });
