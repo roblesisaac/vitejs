@@ -30,13 +30,15 @@ passport.deserializeUser((obj, cb) => {
 });
 
 const noCache = function(req, res, next) {
-  console.log({ req, res });
+  res.header("Cache-Control", "no-cache, no-store, must-revalidate");
+  res.header("Pragma", "no-cache");
+  res.header("Expires", 0);
   next();
 };
 
 api.get('/:component/auth/google', 
 passport.initialize(), 
-passport.session(), 
+passport.session(),
 noCache, 
 passport.authenticate('google', { scope: ['email'] }));
 
