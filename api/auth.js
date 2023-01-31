@@ -22,18 +22,18 @@ export default async (req, res, api) => {
     })
   );
 
-  // passport.serializeUser((user, cb) => {
-  //   cb(null, user);
-  // });
+  passport.serializeUser((user, cb) => {
+    cb(null, user);
+  });
 
-  // passport.deserializeUser((obj, cb) => {
-  //   cb(null, obj);
-  // });
+  passport.deserializeUser((obj, cb) => {
+    cb(null, obj);
+  });
   
 
   // passport.authenticate('google', { scope: ['profile'] });
 
-  res.json("hellow");
+  res.json("hello passport");
 
   // mongo.insert._import({ res, req })("users", { name: 12 })
   //   .then(respond)
