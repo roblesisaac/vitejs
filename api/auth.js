@@ -27,11 +27,7 @@ passport.deserializeUser((obj, cb) => {
   cb(null, obj);
 });
 
-// api.get("/:component/auth/google", passport.initialize(), passport.session(), function(req, res) {
-//   res.json("google auth");
-// });
-
-api.get('/:component/auth/google', passport.authenticate('google', { scope: ['email'] }));
+api.get('/:component/auth/google', passport.initialize(), passport.session(), passport.authenticate('google', { scope: ['email'] }));
 
 Define the endpoint for handling the callback from Google
 api.get('/:component/auth/google/callback', passport.authenticate('google', { failureRedirect: '/login' }), (req, res) => {
