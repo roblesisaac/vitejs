@@ -7,16 +7,16 @@ http.on(404, "index.html");
 
 //db
 const endpoint = "/:component/db/";
-api.get(endpoint, (req, res) => db.find(req, res));
-api.get(endpoint+":id", (req, res) => db.findOne(req, res));
+api.get(endpoint, db.find);
+api.get(endpoint+":id",  db.findOne);
 
-api.put(endpoint+":id", (req, res) => db.updateOne(req, res));
-api.put(endpoint, (req, res) => db.updateMany(req, res));
+api.put(endpoint+":id",  db.updateOne);
+api.put(endpoint, db.updateMany);
 
-api.post(endpoint, (req, res) => db.insert(req, res));
+api.post(endpoint, db.insert);
 
-api.delete(endpoint+":id", (req, res) => db.deleteOne(req, res));
-api.delete(endpoint, (req, res) => db.deleteMany(req, res));
+api.delete(endpoint+":id", db.deleteOne);
+api.delete(endpoint, db.deleteMany);
 
 
 //auth
