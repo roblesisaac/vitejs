@@ -5,20 +5,18 @@ import db from "./api/db.js";
 
 http.on(404, "index.html");
 
-const test = db.find;
-
 //db
 const endpoint = "/:component/db/";
-api.get(endpoint, test);
-api.get(endpoint+":id",  db.findOne);
+api.get(endpoint, (req, res) => db.find(req, res));
+api.get(endpoint+":id", (req, res) => db.findOne(req, res));
 
-api.put(endpoint+":id",  db.updateOne);
-api.put(endpoint, db.updateMany);
+api.put(endpoint+":id", (req, res) => db.updateOne(req, res));
+api.put(endpoint, (req, res) => db.updateMany(req, res));
 
-api.post(endpoint, db.insert);
+api.post(endpoint, (req, res) => db.insert(req, res));
 
-api.delete(endpoint+":id", db.deleteOne);
-api.delete(endpoint, db.deleteMany);
+api.delete(endpoint+":id", (req, res) => db.deleteOne(req, res));
+api.delete(endpoint, (req, res) => db.deleteMany(req, res));
 
 
 //auth
@@ -27,7 +25,7 @@ api.get("/:component/auth", function(req, res) {
 });
 
 // Catch all for missing API routes
-// api.get("/:component/api/*", (req, res) => {
-//   console.log(`404 - api`);
-//   res.status(404).send({ error: "not found" });
-// });
+api.get("/:component/api/*", (req, res) => {
+  console.log(`404 - api`);
+  res.status(404).send({ error: "not found" });
+});
