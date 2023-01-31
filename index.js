@@ -20,7 +20,9 @@ api.delete(endpoint, (req, res) => db.deleteMany(req, res));
 
 
 //auth
-api.get("/:component/auth", auth);
+api.get("/:component/auth", function(req, res) {
+  auth(req, res, api);
+});
 
 // Catch all for missing API routes
 api.get("/:component/api/*", (req, res) => {
