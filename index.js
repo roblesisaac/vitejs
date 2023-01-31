@@ -7,7 +7,7 @@ http.on(404, "index.html");
 
 //db
 const endpoint = "/:component/db/";
-api.get(endpoint, db.find);
+api.get(endpoint, (req, res) =>  db.find(req, res));
 api.get(endpoint+":id",  db.findOne);
 
 api.put(endpoint+":id",  db.updateOne);
