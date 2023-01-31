@@ -5,9 +5,7 @@ import db from "./api/db.js";
 
 http.on(404, "index.html");
 
-const test = function(req, res) {
-  res.json("hi");
-}
+const test = db.get;
 
 //db
 const endpoint = "/:component/db/";
