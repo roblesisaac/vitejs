@@ -31,7 +31,7 @@ export default async (req, res, api) => {
   });
   
 
-  // passport.authenticate('google', { scope: ['profile'] });
+  passport.authenticate('google', { scope: ['profile'] });
 
   res.json("hello passport");
 
