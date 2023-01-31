@@ -5,7 +5,7 @@ import db from "./api/db.js";
 
 http.on(404, "index.html");
 
-function test = function(req, res) {
+const test = function(req, res) {
   res.send("hi");
 }
 
