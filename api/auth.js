@@ -19,19 +19,19 @@ passport.use(
 // api.use(passport.initialize());
 // api.use(passport.session());
 
-// passport.serializeUser((user, cb) => {
-//   cb(null, user);
-// });
-
-// passport.deserializeUser((obj, cb) => {
-//   cb(null, obj);
-// });
-
-api.get("/:component/auth/google", function(req, res) {
-  res.json("google auth");
+passport.serializeUser((user, cb) => {
+  cb(null, user);
 });
 
-// api.get('/:component/auth/google', passport.authenticate('google', { scope: ['email'] }));
+passport.deserializeUser((obj, cb) => {
+  cb(null, obj);
+});
+
+// api.get("/:component/auth/google", passport.initialize(), passport.session(), function(req, res) {
+//   res.json("google auth");
+// });
+
+api.get('/:component/auth/google', passport.authenticate('google', { scope: ['email'] }));
 
 // Define the endpoint for handling the callback from Google
 // api.get('/:component/auth/google/callback', passport.authenticate('google', { failureRedirect: '/login' }), (req, res) => {
