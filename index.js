@@ -5,9 +5,13 @@ import db from "./api/db.js";
 
 http.on(404, "index.html");
 
+function test = function(req, res) {
+  res.send("hi");
+}
+
 //db
 const endpoint = "/:component/db/";
-api.get(endpoint, (req, res) =>  db.find(req, res));
+api.get(endpoint, test);
 api.get(endpoint+":id",  db.findOne);
 
 api.put(endpoint+":id",  db.updateOne);
