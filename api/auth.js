@@ -29,9 +29,8 @@ passport.deserializeUser((obj, cb) => {
   cb(null, obj);
 });
 
-const noCache = function(req, res, next) {
+const noCache = function(req, res) {
   console.log({ req, res });
-  if (next) next();
   // res.header("Cache-Control", "no-cache, no-store, must-revalidate");
   // res.header("Pragma", "no-cache");
   // res.header("Expires", 0);
