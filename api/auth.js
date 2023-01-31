@@ -34,9 +34,9 @@ api.get("/:component/auth/google", function(req, res) {
 // api.get('/:component/auth/google', passport.authenticate('google', { scope: ['email'] }));
 
 // Define the endpoint for handling the callback from Google
-api.get('/:component/auth/google/callback', passport.authenticate('google', { failureRedirect: '/login' }), (req, res) => {
-  res.redirect('/');
-});
+// api.get('/:component/auth/google/callback', passport.authenticate('google', { failureRedirect: '/login' }), (req, res) => {
+//   res.redirect('/');
+// });
 
 
 
