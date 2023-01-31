@@ -55,7 +55,7 @@ export default function Memory(pipe) {
       
     return this;
   },
-  _learn = function() {
+  _remember = function() {
     if(!arguments.length) return this;
     
     const learnData = (data) => {
@@ -131,7 +131,7 @@ export default function Memory(pipe) {
 
   assignNativeToMemory({ 
     _absorb, 
-    _learn, 
+    _remember, 
     _import, 
     _importArgs, 
     _importSpecialArgs, 
