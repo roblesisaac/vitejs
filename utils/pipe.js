@@ -142,8 +142,8 @@ function Pipe(blueprint) {
           nextStep.call(this).method(memory, rabbitTrail, parentSpecial);
         }.bind(this)
   
-        const _learn = function(res) {
-          memory._learn(res);
+        const learn = function(res) {
+          memory._remember(res);
           next(res);
         };
   
@@ -154,7 +154,7 @@ function Pipe(blueprint) {
                 
           arr = convert.toArray(arr);
           
-          return arr.concat([next, _learn]);
+          return arr.concat([next, learn]);
         };
   
         const stepData = function() {
@@ -190,18 +190,18 @@ function Pipe(blueprint) {
         }
   
         if (typeof method != "function") {
-          memory._learn(stepData());
+          memory._remember(stepData());
           return next();
         }
   
         const args = setupArgs(),
             data = stepData(methodName),
-            autoCompletes = method.toString().includesAny("next", "return;");
+            autoCompletes = method.toString().includesAny("next", "_learn", "return;");
   
         try {
           memory
             ._import(data)
-            ._addTools({ step: this, next, _learn });
+            ._addTools({ step: this, next, learn });
 
           method.apply(memory, args);
         } catch (error) {
