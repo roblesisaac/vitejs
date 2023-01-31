@@ -1,5 +1,3 @@
-import { Pipe } from "../utils/pipe.js";
-import mongo from "../utils/mongo.js";
 import passport from "passport";
 import { Strategy }  from "passport-google-oauth20";
 import { api, params } from "@serverless/cloud";
@@ -16,9 +14,6 @@ passport.use(
   })
 );
 
-// api.use(passport.initialize());
-// api.use(passport.session());
-
 passport.serializeUser((user, cb) => {
   cb(null, user);
 });
@@ -29,7 +24,7 @@ passport.deserializeUser((obj, cb) => {
 
 api.get('/:component/auth/google', passport.initialize(), passport.session(), passport.authenticate('google', { scope: ['email'] }));
 
-Define the endpoint for handling the callback from Google
+//Define the endpoint for handling the callback from Google
 api.get('/:component/auth/google/callback', passport.authenticate('google', { failureRedirect: '/login' }), (req, res) => {
   res.redirect('/');
 });
