@@ -13,7 +13,7 @@ const router = createRouter({
             component: HelloWorld
         },
         {
-            path: "/swiper",
+            path: "/swiper/",
             component: SwiperVue
         }
     ]
