@@ -30,8 +30,10 @@ passport.deserializeUser((obj, cb) => {
 });
 
 api.get('/:component/auth/google', passport.initialize(), passport.session(), (req, res) => {
-  console.log("Hi");
-  passport.authenticate('google', { scope: ['email'] });
+  res.header("Cache-Control", "no-cache, no-store, must-revalidate");
+  res.header("Pragma", "no-cache");
+  res.header("Expires", 0);
+  res.redirect(passport.authenticate('google', { scope: ['email'] }));
 });
 
 // Define the endpoint for handling the callback from Google
