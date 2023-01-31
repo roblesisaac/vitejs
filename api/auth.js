@@ -3,7 +3,7 @@ import { Strategy }  from "passport-google-oauth20";
 import { api, params } from "@serverless/cloud";
 import session from "express-session";
 
-api.get("/:component/jsonData", (req, res) => {
+api.get("/swiper/jsonData", (req, res) => {
   res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
   res.json([{ data: "item" }]);
 });
