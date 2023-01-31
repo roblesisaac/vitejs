@@ -16,16 +16,16 @@ passport.use(
   })
 );
 
-api.use(passport.initialize());
-api.use(passport.session());
+// api.use(passport.initialize());
+// api.use(passport.session());
 
-passport.serializeUser((user, cb) => {
-  cb(null, user);
-});
+// passport.serializeUser((user, cb) => {
+//   cb(null, user);
+// });
 
-passport.deserializeUser((obj, cb) => {
-  cb(null, obj);
-});
+// passport.deserializeUser((obj, cb) => {
+//   cb(null, obj);
+// });
 
 api.get("/:component/auth/google", function(req, res) {
   res.json("google auth");
