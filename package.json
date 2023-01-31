@@ -11,6 +11,8 @@
   },
   "dependencies": {
     "node-fetch": "^3.3.0",
+    "passport": "^0.6.0",
+    "passport-google-oauth20": "^2.0.0",
     "swiper": "^8.4.6",
     "vue": "^3.2.45",
     "vue-router": "^4.1.6"
