@@ -32,11 +32,19 @@ passport.deserializeUser((obj, cb) => {
 const noCache = function(req, res) {
   console.log({ req, res });
 };
+const simpleMiddleware = (req, res, next) => {
+  console.log("This is a simple middleware function");
+  next();
+};
 
-api.get('/:component/auth/google', passport.initialize(), passport.session(), noCache, passport.authenticate('google', { scope: ['email'] }));
+api.get('/:component/auth/google', 
+passport.initialize(), 
+passport.session(), 
+noCache, 
+passport.authenticate('google', { scope: ['email'] }));
 
 // Define the endpoint for handling the callback from Google
-api.get('/:component/auth/google/callback', noCache(), passport.authenticate('google', { failureRedirect: '/login' }), (req, res) => {
+api.get('/:component/auth/google/callback', simpleMiddleware, passport.authenticate('google', { failureRedirect: '/login' }), (req, res) => {
   res.redirect('/');
 });
 
