@@ -21,7 +21,7 @@ export default async (req, res, api) => {
       return cb(null, profile);
     })
   );
-  
+
   // passport.serializeUser((user, cb) => {
   //   cb(null, user);
   // });
@@ -29,8 +29,11 @@ export default async (req, res, api) => {
   // passport.deserializeUser((obj, cb) => {
   //   cb(null, obj);
   // });
+  
 
   // passport.authenticate('google', { scope: ['profile'] });
+
+  res.json("hellow");
 
   // mongo.insert._import({ res, req })("users", { name: 12 })
   //   .then(respond)
