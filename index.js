@@ -27,7 +27,7 @@ api.get("/:component/auth", function(req, res) {
 });
 
 // Catch all for missing API routes
-api.get("/:component/api/*", (req, res) => {
-  console.log(`404 - api`);
-  res.status(404).send({ error: "not found" });
-});
+// api.get("/:component/api/*", (req, res) => {
+//   console.log(`404 - api`);
+//   res.status(404).send({ error: "not found" });
+// });
