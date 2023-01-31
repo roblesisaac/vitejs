@@ -16,6 +16,9 @@ passport.use(
   })
 );
 
+api.use(passport.initialize());
+api.use(passport.session());
+
 passport.serializeUser((user, cb) => {
   cb(null, user);
 });
@@ -23,10 +26,6 @@ passport.serializeUser((user, cb) => {
 passport.deserializeUser((obj, cb) => {
   cb(null, obj);
 });
-
-api.use(passport.initialize());
-api.use(passport.session());
-
 
 api.get('/:component/auth/google', passport.authenticate('google', { scope: ['email'] }));
 
