@@ -68,7 +68,7 @@ export default new Pipe({
     deleteMany: (req, res) => [
       "_setup", "mongoDeleteMany", "serve"
     ],
-    find: (req, res) => [ { log: "hello" },
+    find: (req, res) => [
       "_setup", "mongoFind", "serve"
     ],
     findOne: (req,res) => [
