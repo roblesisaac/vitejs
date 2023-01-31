@@ -19,10 +19,10 @@ api.delete(endpoint+":id", (req, res) => db.deleteOne(req, res));
 api.delete(endpoint, (req, res) => db.deleteMany(req, res));
 
 
-//auth
-api.get("/:component/auth", function(req, res) {
-  auth(req, res, api);
-});
+// //auth
+// api.get("/:component/auth", function(req, res) {
+//   auth(req, res, api);
+// });
 
 api.get("/auth/google/callback", function(req, res) {
   res.json("callback fired");
