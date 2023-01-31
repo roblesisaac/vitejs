@@ -13,7 +13,7 @@ export default async (req, res, api) => {
 
 // Configure the Google Sign-In strategy
 passport.use(
-  new GoogleStrategy({
+  new Strategy({
     clientID: params.GOOGLE_ID,
     clientSecret: params.GOOGLE_SECRET,
     callbackURL: `https://pragmatic-binary-atdgy.cloud.serverless.com/auth/google/callback`
