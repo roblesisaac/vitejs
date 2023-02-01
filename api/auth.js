@@ -6,7 +6,7 @@ import { createServer } from "vite";
 
 const server = createServer();
 
-api.get("/hello", server.middleware(), (req, res) => {
+api.get("/hello", server.middleware, (req, res) => {
   res.json("hello");
 });
 
