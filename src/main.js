@@ -20,16 +20,18 @@ const router = createRouter({
         {
             path: "/login",
             component: LoginForm
-        },
-        {
-            path: '*',
-            beforeEnter(to, from, next) {
-              window.location.replace(to.fullPath);
-              next(false);
-            }
         }
     ]
 });
+
+router.beforeEach((to, from, next) => {
+    if (to.path === '/auth/google') {
+      window.location.replace('/auth/google?redirect=' + encodeURIComponent(to.fullPath));
+      next(false);
+    } else {
+      next();
+    }
+  });
 
 
 createApp(App)
