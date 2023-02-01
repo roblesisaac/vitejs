@@ -20,6 +20,7 @@
       };
     },
     created() {
+        console.log("created");
     //   fetch('/api/user')
     //     .then(res => res.json())
     //     .then(user => {
