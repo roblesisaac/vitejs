@@ -15,7 +15,8 @@
     },
     methods: {
       login() {
-        window.location.href += '/auth/google';
+        window.location.href = '/login/auth/google?redirect=' + encodeURIComponent(path) + '&ts=' + Date.now();
+
       },
     },
     created() {
