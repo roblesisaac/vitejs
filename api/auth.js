@@ -5,7 +5,7 @@ import session from "express-session";
 
 api.get("/test/jsonData", (req, res) => {
   res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
-  res.json([{ data: "item" }]);
+  res.json([{ data: "items" }]);
 });
 
 api.use(session({
