@@ -3,14 +3,14 @@ import { Strategy }  from "passport-google-oauth20";
 import { api, params } from "@serverless/cloud";
 import session from "express-session";
 import noCache from "./noCache";
-import { createServer as createViteServer } from 'vite'
+// import { createServer as createViteServer } from 'vite'
 
-const vite = await createViteServer({
-  server: { middlewareMode: true },
-  appType: 'custom'
-})
+// const vite = await createViteServer({
+//   server: { middlewareMode: true },
+//   appType: 'custom'
+// })
 
-api.use(vite.middlewares);
+// api.use(vite.middlewares);
 
 api.get("/hello", (req, res) => {
   res.json("hello");
