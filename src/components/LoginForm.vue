@@ -18,15 +18,7 @@
           window.location.href = '/login/auth/google?redirect=' + encodeURIComponent(path);
         },
       };
-    },
-    created() {
-        console.log("flower");
-    //   fetch('/api/user')
-    //     .then(res => res.json())
-    //     .then(user => {
-    //       this.user = user;
-    //     });
-    },
+    }
   };
   </script>
   
