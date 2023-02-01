@@ -1,18 +1,18 @@
 import passport from "passport";
 import { Strategy }  from "passport-google-oauth20";
 import { api, params } from "@serverless/cloud";
-import session from "express-session";
+// import session from "express-session";
 
 api.get("/test/jsonData", (req, res) => {
   res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
   res.json([{ data: "items here!" }]);
 });
 
-api.use(session({
-  secret: 'secret',
-  resave: false,
-  saveUninitialized: false
-}));
+// api.use(session({
+//   secret: 'secret',
+//   resave: false,
+//   saveUninitialized: false
+// }));
 
 passport.use(
   new Strategy({
