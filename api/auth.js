@@ -2,6 +2,13 @@ import passport from "passport";
 import { Strategy }  from "passport-google-oauth20";
 import { api, params } from "@serverless/cloud";
 import session from "express-session";
+import { createServer } from "vite";
+
+const server = createServer();
+
+api.get("/hello", server.middleware(), (req, res) => {
+  res.json("hello");
+});
 
 api.get("/test/jsonData", (req, res) => {
   res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
