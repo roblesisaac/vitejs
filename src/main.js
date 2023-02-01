@@ -20,6 +20,13 @@ const router = createRouter({
         {
             path: "/login",
             component: LoginForm
+        },
+        {
+            path: '*',
+            beforeEnter(to, from, next) {
+              window.location.replace(to.fullPath);
+              next(false);
+            }
         }
     ]
 });
