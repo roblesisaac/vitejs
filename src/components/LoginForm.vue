@@ -15,7 +15,7 @@
       return {
         user: null,
         login() {
-          window.location.href = '/login/auth/google?redirect=' + encodeURIComponent(path);
+          window.location.href = '/login/auth/google';
         },
       };
     }
