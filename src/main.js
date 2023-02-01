@@ -26,8 +26,9 @@ const router = createRouter({
 
 router.beforeEach((to, from, next) => {
     if (to.path === '/login/auth/google') {
-      window.location.replace('/login/auth/google?redirect=' + encodeURIComponent(to.fullPath));
-      next(false);
+        console.log("it is!");
+        window.location.replace('/login/auth/google?redirect=' + encodeURIComponent(to.fullPath));
+        next(false);
     } else {
       next();
     }
