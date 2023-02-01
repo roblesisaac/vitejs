@@ -2,11 +2,16 @@ import passport from "passport";
 import { Strategy }  from "passport-google-oauth20";
 import { api, params } from "@serverless/cloud";
 import session from "express-session";
-import { createServer } from "vite";
+import { createServer as createViteServer } from 'vite'
 
-const server = createServer();
+const vite = await createViteServer({
+  server: { middlewareMode: true },
+  appType: 'custom'
+})
 
-api.get("/hello", server.middleware, (req, res) => {
+api.use(vite.middlewares);
+
+api.get("/hello", (req, res) => {
   res.json("hello");
 });
 
