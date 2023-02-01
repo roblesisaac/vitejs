@@ -25,7 +25,7 @@ const router = createRouter({
 });
 
 router.beforeEach((to, from, next) => {
-    console.log({ to })
+    console.log({ to, from })
     if (to.fullPath === '/login/auth/google') {
         console.log("nope");
         return;
