@@ -15,7 +15,7 @@
     },
     methods: {
       login() {
-        window.location.href = '/auth/google';
+        window.location.href += '/auth/google';
       },
     },
     created() {
