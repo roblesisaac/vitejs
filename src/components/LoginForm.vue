@@ -15,7 +15,8 @@
       return {
         user: null,
         login() {
-          window.location.href = '/login/auth/google';
+            console.log("login");
+            window.location.href = '/login/auth/google';
         },
       };
     }
