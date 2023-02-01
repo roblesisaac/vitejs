@@ -2,6 +2,7 @@
   <nav>
     <router-link to="/">Home</router-link>
     <router-link to="/swiper">Swiper</router-link>
+    <router-link to="/loign">Login</router-link>
   </nav>
   <router-view />
 </template>

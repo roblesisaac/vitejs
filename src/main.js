@@ -4,6 +4,7 @@ import App from "./App.vue";
 
 import HelloWorld from "./components/HelloWorld.vue";
 import SwiperVue from "./components/SwiperVue.vue";
+import LoginForm from "./components/LoginForm.vue";
 
 const router = createRouter({
     history: createWebHistory(),
@@ -15,6 +16,10 @@ const router = createRouter({
         {
             path: "/swiper/",
             component: SwiperVue
+        },
+        {
+            path: "/login",
+            component: LoginForm
         }
     ]
 });
