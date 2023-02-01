@@ -2,6 +2,7 @@ import passport from "passport";
 import { Strategy }  from "passport-google-oauth20";
 import { api, params } from "@serverless/cloud";
 import session from "express-session";
+import noCache from "./noCache";
 // import { createServer as createViteServer } from 'vite'
 
 // const vite = await createViteServer({
@@ -45,13 +46,6 @@ passport.serializeUser((user, cb) => {
 passport.deserializeUser((obj, cb) => {
   cb(null, obj);
 });
-
-const noCache = function(req, res, next) {
-  res.header("Cache-Control", "no-cache, no-store, must-revalidate");
-  res.header("Pragma", "no-cache");
-  res.header("Expires", 0);
-  next();
-};
 
 api.get('/:component/auth/google', 
 passport.initialize(), 
