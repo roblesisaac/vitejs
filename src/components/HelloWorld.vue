@@ -1,6 +1,6 @@
 <template>
   <div class="hello">
-    <h1>Aloha!!</h1>
+    <h1>Aloha!!!</h1>
     <p>
       <img alt="Vue logo" src="../assets/van.jpeg" height="100" />
     </p>
