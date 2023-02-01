@@ -16,7 +16,7 @@ api.get("/hello", (req, res) => {
   res.json("hello");
 });
 
-api.get("/test/jsonData", (req, res) => {
+api.get("/test/jsonData", noCache, (req, res) => {
   res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
   res.json([{ data: "items" }]);
 });
