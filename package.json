@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "start": "cloud",
-    "dev": "vite",
+    "dev": "clear",
     "build": "clear; vite build; git add -A; git commit -m \"cloud update\"; git push;",
     "preview": "vite preview"
   },
