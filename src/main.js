@@ -24,19 +24,12 @@ const router = createRouter({
     ]
 });
 
-router.beforeEach((to, from, next) => {
-    console.log({ to, from })
-    if (to.fullPath === '/login/auth/google') {
-        window.location.assign('/login/auth/google?redirect=' + encodeURIComponent(to.fullPath));
-        return;
-    } else {
-        next();
-    }
-});
 
-
-
-
-createApp(App)
+if (window.location.pathname.startsWith('/test')) {
+    console.log("it starts with test");
+    // This is an API request, do not render Vue.js
+  } else {
+    createApp(App)
     .use(router)
     .mount("#app");
+  }
