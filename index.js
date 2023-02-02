@@ -3,7 +3,7 @@ import { api, http } from "@serverless/cloud";
 import auth from "./api/auth.js";
 import db from "./api/db.js";
 
-http.on(404, (req, res) {
+http.on(404, (req, res) => {
   res.json("error");
 });
 
@@ -21,7 +21,7 @@ api.delete(endpoint+":id", (req, res) => db.deleteOne(req, res));
 api.delete(endpoint, (req, res) => db.deleteMany(req, res));
 
 // Catch all for missing API routes
-api.get("/:component/api/*", (req, res) => {
-  console.log(`404 - api`);
-  res.status(404).send({ error: "not found" });
-});
+// api.get("/:component/api/*", (req, res) => {
+//   console.log(`404 - api`);
+//   res.status(404).send({ error: "not found" });
+// });
