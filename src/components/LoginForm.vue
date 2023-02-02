@@ -15,8 +15,19 @@
       return {
         user: null,
         login() {
-            console.log("login");
-            window.location.href = '/login/auth/google';
+          fetch('/api/data')
+            .then(response => {
+              if (!response.ok) {
+                console.log(response);
+              }
+              return response.json();
+            })
+            .then(data => {
+              console.log({ data });
+            })
+            .catch(error => {
+              console.error({error});
+            });
         },
       };
     }
