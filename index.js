@@ -3,9 +3,7 @@ import { api, http } from "@serverless/cloud";
 import auth from "./api/auth.js";
 import db from "./api/db.js";
 
-http.on(404, (req, res) => {
-  res.json("error");
-});
+http.on(404, "index.html");
 
 //db
 const endpoint = "/:component/db/";

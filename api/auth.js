@@ -2,7 +2,7 @@ import passport from "passport";
 import { Strategy }  from "passport-google-oauth20";
 import { api, params } from "@serverless/cloud";
 import session from "express-session";
-import noCache from "./noCache";
+// import noCache from "./utils/noCache";
 // import { createServer as createViteServer } from 'vite'
 
 // const vite = await createViteServer({
@@ -16,7 +16,7 @@ api.get("/hello", (req, res) => {
   res.json("hello");
 });
 
-api.get("/test/jsonData", noCache, (req, res) => {
+api.get("/test/jsonData", (req, res) => {
   res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
   res.json([{ data: "items" }]);
 });
@@ -55,7 +55,7 @@ passport.authenticate('google', { scope: ['email'] }), (req, res) => {
 });
 
 // Define the endpoint for handling the callback from Google
-api.get('/:component/auth/google/callback', noCache, passport.authenticate('google', { failureRedirect: '/login' }), (req, res) => {
+api.get('/:component/auth/google/callback', passport.authenticate('google', { failureRedirect: '/login' }), (req, res) => {
   res.redirect('/');
 });
 
