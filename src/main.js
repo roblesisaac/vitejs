@@ -25,8 +25,8 @@ const router = createRouter({
 });
 
 
-if (window.location.pathname.startsWith('/test')) {
-    console.log("it starts with test");
+if (window.location.pathname.includes("auth/google")) {
+    console.log("its google");
     // This is an API request, do not render Vue.js
   } else {
     createApp(App)
