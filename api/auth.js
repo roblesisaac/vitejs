@@ -50,8 +50,9 @@ passport.deserializeUser((obj, cb) => {
 api.get('/:component/auth/google', 
 passport.initialize(), 
 passport.session(),
-noCache, 
-passport.authenticate('google', { scope: ['email'] }));
+passport.authenticate('google', { scope: ['email'] }), (req, res) => {
+  res.json("logged in with google!");
+});
 
 // Define the endpoint for handling the callback from Google
 api.get('/:component/auth/google/callback', noCache, passport.authenticate('google', { failureRedirect: '/login' }), (req, res) => {
