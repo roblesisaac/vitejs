@@ -5,8 +5,13 @@
   "type": "module",
   "scripts": {
     "start": "cloud",
-    "dev": "clear",
-    "build": "clear; vite build; git add -A; git commit -m \"cloud update\"; git push;",
+    "dev": "vite",
+    "build": "clear; vite build;",
+    "commit": "git add -A; git commit -m \"cloud update\"; git push;",
+    "update": "npm run build; npm run commit",
+    "cloud:build": "npm run build",
+    "cloud:commit": "npm run commit",
+    "cloud:update": "npm run update",
     "preview": "vite preview"
   },
   "dependencies": {

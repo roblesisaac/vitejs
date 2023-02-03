@@ -24,12 +24,6 @@ const router = createRouter({
     ]
 });
 
-
-if (window.location.pathname.includes("auth/google")) {
-    console.log("its google");
-    // This is an API request, do not render Vue.js
-  } else {
-    createApp(App)
-    .use(router)
-    .mount("#app");
-  }
+createApp(App)
+.use(router)
+.mount("#app");
