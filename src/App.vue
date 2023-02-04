@@ -3,6 +3,8 @@
     <router-link to="/">Home</router-link>
     <router-link to="/swiper">Swiper</router-link>
     <router-link to="/login">Login</router-link>
+    <a href="/logout">Logout</a>
+    <a href="/login/protected">Protected</a>
   </nav>
   <router-view />
 </template>
