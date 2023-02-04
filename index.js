@@ -1,5 +1,6 @@
 import { api, http, params } from "@serverless/cloud";
 import db from "./api/db.js";
+// import auth from "./api/auth.js";
 
 import passport from "passport";
 import { Strategy } from "passport-google-oauth20";
@@ -62,11 +63,7 @@ api.get('/login/auth/google/callback', passport.authenticate('google', { failure
     httpOnly: true, // set the httpOnly flag to prevent client-side access to the cookie
     maxAge: (60*60) * 1000 // set the max age to 1 hour
   });
-  res.redirect('/login/protected');
-});
-
-api.get("/:component/protected", protect, (req, res) => {
-    res.json("protected db!");
+  res.redirect('/');
 });
 
 api.get("/logout", (req, res) => {
@@ -76,7 +73,7 @@ api.get("/logout", (req, res) => {
 
 //dbs
 const endpoint = "/:component/db/";
-api.get(endpoint, (req, res) => db.find(req, res));
+api.get(endpoint, protect, (req, res) => db.find(req, res));
 api.get(endpoint+":id", (req, res) => db.findOne(req, res));
 
 api.put(endpoint+":id", (req, res) => db.updateOne(req, res));
