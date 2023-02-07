@@ -6,36 +6,49 @@ import { Strategy } from "passport-google-oauth20";
 import cookieParser from "cookie-parser";
 import jwt from "jsonwebtoken";
 import expressSession from "express-session";
-
-function protect(req, res, next) {
-    const token = req.cookies.user;
-    try {
-        const user = jwt.verify(token, params.JWT_SECRET);
-        req.user = user;
-        next()
-    } catch (error) {
-        res.json({ error, message: "logged out" });
-    }
-}
+// import bcrypt from "bcrypt";
   
 function ensureHttps(req, res, next) {
-    if (!req.secure) {
-      return res.redirect(`https://${req.headers.host}${req.url}`);
-    }
-    next();
+  if (!req.secure) {
+    return res.redirect(`https://${req.headers.host}${req.url}`);
+  }
+  next();
 }
-  
+
 function validateHostName(clientHost, validHost) {
-    return clientHost === validHost;
+  return clientHost === validHost;
+}
+
+function assignCookie(res, user, secret) {
+  const token = jwt.sign(user, secret);
+      
+  res.cookie("user", token, {
+    secure: true,
+    httpOnly: true,
+    sameSite: "strict",
+    domain,
+    maxAge: (60*60) * 1000
+  });
+}
+
+function protect(req, res, next) {
+  const token = req.cookies.user;
+  try {
+    const user = jwt.verify(token, params.JWT_SECRET);
+    req.user = user;
+    next()
+  } catch (error) {
+    res.json({ error, message: "logged out" });
+  }
 }
 
 const { 
-    SESSION_ID, 
-    COOKIE_KEY,
-    GOOGLE_ID,
-    GOOGLE_SECRET,
-    JWT_SECRET,
-    CLOUD_URL
+  SESSION_ID, 
+  COOKIE_KEY,
+  GOOGLE_ID,
+  GOOGLE_SECRET,
+  JWT_SECRET,
+  CLOUD_URL
 } = params;
 
 const domain = "."+CLOUD_URL.replace("https://", "");
@@ -83,41 +96,34 @@ passport.serializeUser((user, cb) => {
   cb(null, user);
 });
 passport.deserializeUser((obj, cb) => {
-    cb(null, obj);
+  cb(null, obj);
 });
 
 api.get(
-    '/login/auth/google',
-    passport.authenticate('google', { scope: ['email'], session: false })
+  "/login/auth/google",
+  passport.authenticate("google", { scope: ["email"], session: false })
 );
 
 // Define the callback route
 api.get(
-    '/login/auth/google/callback', 
-    passport.authenticate('google', { failureRedirect: '/login', session: false }), 
-    (req, res) => {
-        const token = jwt.sign(req.user, JWT_SECRET);
-        
-        res.cookie("user", token, {
-            secure: true,
-            httpOnly: true,
-            sameSite: "strict",
-            domain,
-            maxAge: (60*60) * 1000
-        });
-        
-        res.redirect('/');
-    }
+  "/login/auth/google/callback", 
+  passport.authenticate("google", { failureRedirect: "/login", session: false }), 
+  (req, res) => {
+
+    assignCookie(res, req.user, JWT_SECRET);
+
+    res.redirect("/");
+  }
 );
 
 api.get("/logout", (req, res) => {
-    res.cookie("user", "", {
-        expires: new Date(0),
-        path: "/",
-        domain: "."+req.headers.host,
-    });
+  res.cookie("user", "", {
+    expires: new Date(0),
+    path: "/",
+    domain: "."+req.headers.host,
+  });
     
-    res.redirect("/");
+  res.redirect("/");
 });
 
 //dbs
