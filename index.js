@@ -1,30 +1,58 @@
 import { api, http, params } from "@serverless/cloud";
 import db from "./api/db.js";
-// import auth from "./api/auth.js";
 
 import passport from "passport";
 import { Strategy } from "passport-google-oauth20";
 import cookieParser from "cookie-parser";
 import jwt from "jsonwebtoken";
 import expressSession from "express-session";
-const domain = "https://exciting-project-3awb8b.cloud.serverless.com";
 
-import { protect } from "./api/utils";
-
-// Check for HTTPS connection
-api.use((req, res, next) => {
+function protect(req, res, next) {
+    const token = req.cookies.user;
+    try {
+        const user = jwt.verify(token, params.JWT_SECRET);
+        req.user = user;
+        next()
+    } catch (error) {
+        res.json({ error, message: "logged out" });
+    }
+}
+  
+function ensureHttps(req, res, next) {
     if (!req.secure) {
-        return res.redirect(`https://${req.headers.host}${req.url}`);
+      return res.redirect(`https://${req.headers.host}${req.url}`);
     }
     next();
-});
+}
+  
+function validateHostName(clientHost, validHost) {
+    return clientHost === validHost;
+}
 
-api.use(cookieParser());
+const { 
+    SESSION_ID, 
+    COOKIE_KEY,
+    GOOGLE_ID,
+    GOOGLE_SECRET,
+    JWT_SECRET,
+    CLOUD_URL
+} = params;
+
+const domain = "."+CLOUD_URL.replace("https://", "");
+
+api.use(cookieParser(COOKIE_KEY));
+
+api.use(ensureHttps);
+
 api.use(expressSession({
-  secret: "SESSION_SECRET",
+  secret: SESSION_ID,
   resave: false,
   saveUninitialized: false,
   cookie: {
+    secure: true,
+    httpOnly: true,
+    sameSite: "strict",
+    domain,
     maxAge: (60*60) * 1000
   }
 }));
@@ -36,11 +64,16 @@ api.use(passport.session());
 // Use the Google OAuth 2.0 strategy
 passport.use(
   new Strategy({
-    clientID: params.GOOGLE_ID,
-    clientSecret: params.GOOGLE_SECRET,
-    callbackURL: `${domain}/login/auth/google/callback`
+    clientID: GOOGLE_ID,
+    clientSecret: GOOGLE_SECRET,
+    callbackURL: `${CLOUD_URL}/login/auth/google/callback`,
+    passReqToCallback: true
   },
-  (accessToken, refreshToken, profile, cb) => {
+  (req, accessToken, refreshToken, profile, cb) => {
+    const validClientHost = validateHostName("."+req.headers.host, domain);
+
+    if(!validClientHost) cb(new Error("Invalid hostname"));
+
     return cb(null, { accessToken, refreshToken, profile });
   })
 );
@@ -53,22 +86,38 @@ passport.deserializeUser((obj, cb) => {
     cb(null, obj);
 });
 
-api.get('/login/auth/google', passport.authenticate('google', { scope: ['email'] }));
+api.get(
+    '/login/auth/google',
+    passport.authenticate('google', { scope: ['email'], session: false })
+);
 
 // Define the callback route
-api.get('/login/auth/google/callback', passport.authenticate('google', { failureRedirect: '/login' }), (req, res) => {
-  const token = jwt.sign(req.user, "JWT_SECRET");
-  res.cookie("user", token, {
-    secure: true, // set the secure flag to ensure the cookie is sent over HTTPS only
-    httpOnly: true, // set the httpOnly flag to prevent client-side access to the cookie
-    maxAge: (60*60) * 1000 // set the max age to 1 hour
-  });
-  res.redirect('/');
-});
+api.get(
+    '/login/auth/google/callback', 
+    passport.authenticate('google', { failureRedirect: '/login', session: false }), 
+    (req, res) => {
+        const token = jwt.sign(req.user, JWT_SECRET);
+        
+        res.cookie("user", token, {
+            secure: true,
+            httpOnly: true,
+            sameSite: "strict",
+            domain,
+            maxAge: (60*60) * 1000
+        });
+        
+        res.redirect('/');
+    }
+);
 
 api.get("/logout", (req, res) => {
-    res.clearCookie("user");
-    res.redirect("/login");
+    res.cookie("user", "", {
+        expires: new Date(0),
+        path: "/",
+        domain: "."+req.headers.host,
+    });
+    
+    res.redirect("/");
 });
 
 //dbs
