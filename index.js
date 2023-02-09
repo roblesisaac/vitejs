@@ -1,46 +1,25 @@
 import { api, http, params } from "@serverless/cloud";
-import db from "./api/db.js";
-
 import passport from "passport";
 import { Strategy } from "passport-google-oauth20";
 import cookieParser from "cookie-parser";
 import jwt from "jsonwebtoken";
 import expressSession from "express-session";
-// import bcrypt from "bcrypt";
-  
-function ensureHttps(req, res, next) {
-  if (!req.secure) {
-    return res.redirect(`https://${req.headers.host}${req.url}`);
-  }
-  next();
-}
+import tlsCheck from "tls-check";
+import crypto from "crypto";
+import rateLimit from "express-rate-limit";
+import { v4 as uuidv4 } from "uuid";
+import xss from "xss-clean";
 
-function validateHostName(clientHost, validHost) {
-  return clientHost === validHost;
-}
+import db from "./api/db.js";
 
-function assignCookie(res, user, secret) {
-  const token = jwt.sign(user, secret);
-      
-  res.cookie("user", token, {
-    secure: true,
-    httpOnly: true,
-    sameSite: "strict",
-    domain,
-    maxAge: (60*60) * 1000
-  });
-}
+// create rate-limiter
+const limiter = rateLimit({
+  windowMs: 60 * 60 * 1000, // 15 minutes
+  max: 100, // limit each IP to 100 requests per windowMs
+  message: "Too many requests, please try again later."
+});
 
-function protect(req, res, next) {
-  const token = req.cookies.user;
-  try {
-    const user = jwt.verify(token, params.JWT_SECRET);
-    req.user = user;
-    next()
-  } catch (error) {
-    res.json({ error, message: "logged out" });
-  }
-}
+api.use(limiter);
 
 const { 
   SESSION_ID, 
@@ -51,22 +30,153 @@ const {
   CLOUD_URL
 } = params;
 
-const domain = "."+CLOUD_URL.replace("https://", "");
+const hostName = CLOUD_URL.replace("https://", "");
+const domain = "."+hostName;
+
+function ensureHttps(req, res, next) {
+  if (req.hostname !== hostName) {
+    res.status(400).send({ error: "Invalid host name" });
+    return;
+  }
+
+  if (!req.secure) {
+    try {
+      tlsCheck({ hostname: req.headers.host }).then(function(err, result) {
+        if (!err && result.valid_cert) {
+          console.log("Supported Cipher Suites: ", result.cipher_suites);
+          return res.redirect(`https://${req.headers.host}${req.url}`);
+        } else {
+          console.log({ err });
+          return res.status(500).send("An error occurred while trying to redirect to HTTPS. Please try again later.");
+        }
+      });
+    } catch (err) {
+      console.log(err);
+      return res.status(500).send("An error occurred while trying to redirect to HTTPS. Please try again later.");
+    }
+  }
+  
+  next();
+}
+
+function validateHostName(clientHost, validHost) {
+  return clientHost === validHost;
+}
+
+function generateToken(user) {
+  const expiration = Math.floor(Date.now() / 1000) + (60 * 60);
+  return jwt.sign({ user, exp: expiration }, JWT_SECRET, { algorithm: "HS256" });
+}
+
+function assignCookie(res, data, cookieName) {
+  const userString = JSON.stringify(data);
+  const secretLength = 128;
+  const secret = crypto.randomBytes(Math.ceil(secretLength/2)).toString("hex").slice(0,secretLength);
+  const hash = crypto.createHmac("sha512", secret)
+        .update(userString)
+        .digest("hex");
+
+  const token = generateToken(hash);
+      
+  res.cookie(cookieName, token, {
+    secure: true,
+    httpOnly: true,
+    sameSite: "strict",
+    domain,
+    maxAge: (60*60) * 1000,
+    signed: true
+  });
+}
+
+function verify(req, res, next) {
+  const token = req.signedCookies.user;
+  const origin = req.origin;
+  
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET, { algorithm: "HS256" });
+
+    if (decoded.exp <= Math.floor(Date.now() / 1000)) {
+      throw new Error("Token has expired");
+    }
+
+    // if (origin !== decoded.origin) {
+    //   throw new Error("Invalid cookie origin");
+    // }
+
+    req.user = decoded.user;
+    
+    next();
+  } catch (error) {
+    res.json({ error, message: "logged out" });
+  }
+}
+
+function logoutUser(req, res) {
+  req.logout((err) => {
+    if (err) {
+      console.log(`Error logging out: ${ err }`);
+      return;
+    }
+
+    res.cookie("user", "", {
+      expires: new Date(0),
+      path: "/",
+      domain: "."+req.headers.host
+    });
+          
+    res.redirect("/");
+  });
+}
+
+api.use(function (req, _res, next) {
+  var protocol = req.protocol;
+
+  var hostHeaderIndex = req.rawHeaders.indexOf("Host") + 1;
+  var host = hostHeaderIndex ? req.rawHeaders[hostHeaderIndex] : undefined;
+
+  Object.defineProperty(req, "origin", {
+    get: function () {
+      if (!host) {
+        return req.headers.referer ? req.headers.referer.substring(0, req.headers.referer.length - 1) : undefined;
+      }
+      else {
+        return protocol + "://" + host;
+      }
+    }
+  });
+
+  next();
+});
 
 api.use(cookieParser(COOKIE_KEY));
-
+api.use(xss());
 api.use(ensureHttps);
 
+api.use((req, res, next) => {
+  if (!req.sessionID) {
+    req.sessionID = uuidv4();
+  }
+  next();
+});
+
+api.get("/:component/protected", (req, res) => {
+  res.json(req.sessionID);
+});
+
 api.use(expressSession({
+  genid: (req) => {
+    return req.sessionID;
+  },
   secret: SESSION_ID,
-  resave: false,
-  saveUninitialized: false,
+  resave: true,
+  saveUninitialized: true,
   cookie: {
     secure: true,
     httpOnly: true,
     sameSite: "strict",
     domain,
-    maxAge: (60*60) * 1000
+    maxAge: (60*60) * 1000,
+    signed: true
   }
 }));
 
@@ -83,6 +193,8 @@ passport.use(
     passReqToCallback: true
   },
   (req, accessToken, refreshToken, profile, cb) => {
+    // save to db;
+    // console.log("save to db");
     const validClientHost = validateHostName("."+req.headers.host, domain);
 
     if(!validClientHost) cb(new Error("Invalid hostname"));
@@ -110,25 +222,21 @@ api.get(
   passport.authenticate("google", { failureRedirect: "/login", session: false }), 
   (req, res) => {
 
-    assignCookie(res, req.user, JWT_SECRET);
+    assignCookie(res, req.user, "user");
 
     res.redirect("/");
   }
 );
 
-api.get("/logout", (req, res) => {
-  res.cookie("user", "", {
-    expires: new Date(0),
-    path: "/",
-    domain: "."+req.headers.host,
-  });
-    
-  res.redirect("/");
-});
+api.get("/logout", logoutUser);
+
+api.get("/:component/sessionId", (req, res) => {
+  res.json({ sessionId: req.sessionID })
+})
 
 //dbs
 const endpoint = "/:component/db/";
-api.get(endpoint, protect, (req, res) => db.find(req, res));
+api.get(endpoint, verify, (req, res) => db.find(req, res));
 api.get(endpoint+":id", (req, res) => db.findOne(req, res));
 
 api.put(endpoint+":id", (req, res) => db.updateOne(req, res));

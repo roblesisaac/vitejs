@@ -16,14 +16,18 @@
   },
   "dependencies": {
     "cookie-parser": "^1.4.6",
+    "express-rate-limit": "^6.7.0",
     "express-session": "^1.17.3",
     "jsonwebtoken": "^9.0.0",
     "node-fetch": "^3.3.0",
     "passport": "^0.6.0",
     "passport-google-oauth20": "^2.0.0",
     "swiper": "^8.4.6",
+    "tls-check": "^1.0.0",
+    "uuid": "^9.0.0",
     "vue": "^3.2.45",
-    "vue-router": "^4.1.6"
+    "vue-router": "^4.1.6",
+    "xss-clean": "^0.1.1"
   },
   "devDependencies": {
     "@serverless/cloud": "^2.10.13",
