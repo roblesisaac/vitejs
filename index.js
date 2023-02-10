@@ -9,6 +9,7 @@ import crypto from "crypto";
 import rateLimit from "express-rate-limit";
 import { v4 as uuidv4 } from "uuid";
 import xss from "xss-clean";
+import bcrypt from "bcryptjs";
 
 import db from "./api/db.js";
 
@@ -26,10 +27,16 @@ const {
   COOKIE_KEY,
   GOOGLE_ID,
   GOOGLE_SECRET,
-  JWT_SECRET,
-  CLOUD_URL
+  CLOUD_URL,
+  CRYPT_KEY,
+  CRYPT_IV,
+  RSA_PRIVATE,
+  RSA_PUBLIC
 } = params;
 
+const RSA = { PRIVATE: RSA_PRIVATE.replace(/\\n/g, '\n'), PUBLIC: RSA_PUBLIC.replace(/\\n/g, '\n') };
+const ENCRYPT_KEY = JSON.parse(CRYPT_KEY);
+const ENCRYPT_IV = JSON.parse(CRYPT_IV);
 const hostName = CLOUD_URL.replace("https://", "");
 const domain = "."+hostName;
 
@@ -63,22 +70,31 @@ function validateHostName(clientHost, validHost) {
   return clientHost === validHost;
 }
 
-function generateToken(user) {
+function encrypt(text) {
+  let cipher = crypto.createCipheriv("aes-256-cbc", Buffer.from(ENCRYPT_KEY, 'hex'), Buffer.from(ENCRYPT_IV, 'hex'));
+  let encrypted = cipher.update(text);
+  encrypted = Buffer.concat([encrypted, cipher.final()]);
+  return encrypted.toString('hex');
+}
+
+function decrypt(encrypted) {
+  let encryptedText = Buffer.from(encrypted, 'hex');
+  let decipher = crypto.createDecipheriv("aes-256-cbc", Buffer.from(ENCRYPT_KEY, 'hex'), Buffer.from(ENCRYPT_IV, 'hex'));
+  let decrypted = decipher.update(encryptedText);
+  decrypted = Buffer.concat([decrypted, decipher.final()]);
+  return decrypted.toString();
+}
+
+function generateToken(payload) {
   const expiration = Math.floor(Date.now() / 1000) + (60 * 60);
-  return jwt.sign({ user, exp: expiration }, JWT_SECRET, { algorithm: "HS256" });
+  return jwt.sign({ payload, exp: expiration }, RSA.PRIVATE, { algorithm: "RS256" });
 }
 
 function assignCookie(res, data, cookieName) {
-  const userString = JSON.stringify(data);
-  const secretLength = 128;
-  const secret = crypto.randomBytes(Math.ceil(secretLength/2)).toString("hex").slice(0,secretLength);
-  const hash = crypto.createHmac("sha512", secret)
-        .update(userString)
-        .digest("hex");
-
-  const token = generateToken(hash);
+  const token = generateToken(data),
+        encrypted = encrypt(token);
       
-  res.cookie(cookieName, token, {
+  res.cookie(cookieName, encrypted, {
     secure: true,
     httpOnly: true,
     sameSite: "strict",
@@ -89,24 +105,33 @@ function assignCookie(res, data, cookieName) {
 }
 
 function verify(req, res, next) {
-  const token = req.signedCookies.user;
-  const origin = req.origin;
+  const encrypted = req.signedCookies.auth;
+
+  if(!encrypted) {
+    res.json({ message: "Please log in to continue." });
+    return;
+  }
   
   try {
-    const decoded = jwt.verify(token, JWT_SECRET, { algorithm: "HS256" });
+    const decrypted = decrypt(encrypted);
+    const decoded = jwt.verify(decrypted, RSA.PUBLIC, { algorithm: "RS256" });
+    const { payload, exp, iat } = decoded;
+    const { user, origin } = payload;
 
-    if (decoded.exp <= Math.floor(Date.now() / 1000)) {
+    if (exp <= Math.floor(Date.now() / 1000)) {
       throw new Error("Token has expired");
     }
 
-    // if (origin !== decoded.origin) {
-    //   throw new Error("Invalid cookie origin");
-    // }
+    if (req.origin !== origin) {
+      console.log("Error validating cookie.");
+      throw new Error("Invalid cookie origin");
+    }
 
-    req.user = decoded.user;
+    req.user = user;
     
     next();
   } catch (error) {
+    console.log({ error });
     res.json({ error, message: "logged out" });
   }
 }
@@ -118,7 +143,7 @@ function logoutUser(req, res) {
       return;
     }
 
-    res.cookie("user", "", {
+    res.cookie("auth", "", {
       expires: new Date(0),
       path: "/",
       domain: "."+req.headers.host
@@ -157,10 +182,6 @@ api.use((req, res, next) => {
     req.sessionID = uuidv4();
   }
   next();
-});
-
-api.get("/:component/protected", (req, res) => {
-  res.json(req.sessionID);
 });
 
 api.use(expressSession({
@@ -222,7 +243,10 @@ api.get(
   passport.authenticate("google", { failureRedirect: "/login", session: false }), 
   (req, res) => {
 
-    assignCookie(res, req.user, "user");
+    assignCookie(res, {
+      user: req.user,
+      origin: req.origin
+    }, "auth");
 
     res.redirect("/");
   }
@@ -230,8 +254,22 @@ api.get(
 
 api.get("/logout", logoutUser);
 
-api.get("/:component/sessionId", (req, res) => {
-  res.json({ sessionId: req.sessionID })
+api.get("/:component/protected", (req, res) => {
+  const privateKey = crypto.generateKeyPairSync("rsa", {
+    modulusLength: 4096,
+    publicKeyEncoding: {
+      type: "spki",
+      format: "pem"
+    },
+    privateKeyEncoding: {
+      type: "pkcs8",
+      format: "pem"
+    }
+  });
+
+  console.log(privateKey);
+
+  res.json(1);
 })
 
 //dbs

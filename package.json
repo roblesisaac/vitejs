@@ -15,6 +15,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "bcryptjs": "^2.4.3",
     "cookie-parser": "^1.4.6",
     "express-rate-limit": "^6.7.0",
     "express-session": "^1.17.3",
