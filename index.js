@@ -1,4 +1,4 @@
-import { api, http, params } from "@serverless/cloud";
+import { api, http, params, data } from "@serverless/cloud";
 import passport from "passport";
 import { Strategy } from "passport-google-oauth20";
 import cookieParser from "cookie-parser";
@@ -245,32 +245,81 @@ api.get(
 
     assignCookie(res, {
       user: req.user,
-      origin: req.origin
+      origin: CLOUD_URL
     }, "auth");
 
     res.redirect("/");
   }
 );
 
+api.post("/signup", async (req, res) => {
+  const { username, password, profile } = req.body;
+
+  if (!username || !password) {
+    return res
+      .status(400)
+      .json({ message: `Missing "username" or "password" properties.` });
+  }
+
+  const usernameExists = await data.get(`users:${username}`);
+
+  if (usernameExists) {
+    return res.status(400).json({ message: `Username ${username} already exists.` });
+  }
+
+  if (password.length < 8) {
+    return res.status(400).json({ message: `Password must be at least 8 character.` });
+  }
+  
+  async function hashPassword(password) {
+    const salt = await bcrypt.genSalt(10);
+    return await bcrypt.hash(password, salt);
+  }
+
+  const hash = await hashPassword(password);
+
+  const payload = { username, hash, profile };
+
+  await data.set(`users:${username}`, payload);
+
+  res.json(payload);
+  
+});
+
+api.post("/login/native", async (req, res) => {
+  const { username, password } = req.body;
+
+  if (!username || !password) {
+    return res
+      .status(400)
+      .json({ message: `Missing "username" or "password" properties.` });
+  }
+
+
+  const getUserByUsername = (username, options) => data.get(`users:${username}`, options);
+  const user = await getUserByUsername(username);
+
+  if (!user) {
+    return res.status(400).json({ message: `Username ${username} does not exist.` });
+  }
+
+  const isCorrectPassword = await bcrypt.compare(password, user.hash);
+
+  if (!isCorrectPassword) {
+    return res
+      .status(400)
+      .json({ message: `The password you provided is not correct.` });
+  }
+
+  assignCookie(res, {
+    user: user,
+    origin: CLOUD_URL
+  }, "auth");
+  
+  res.json(user);
+});
+
 api.get("/logout", logoutUser);
-
-api.get("/:component/protected", (req, res) => {
-  const privateKey = crypto.generateKeyPairSync("rsa", {
-    modulusLength: 4096,
-    publicKeyEncoding: {
-      type: "spki",
-      format: "pem"
-    },
-    privateKeyEncoding: {
-      type: "pkcs8",
-      format: "pem"
-    }
-  });
-
-  console.log(privateKey);
-
-  res.json(1);
-})
 
 //dbs
 const endpoint = "/:component/db/";
