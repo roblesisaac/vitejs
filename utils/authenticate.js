@@ -1,4 +1,4 @@
-import { Pipe } from "./pipe.js";
+import { Pipe } from "peachmap";
 import mongo from "./mongo.js";
 
 export default new Pipe({

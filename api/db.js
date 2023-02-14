@@ -1,11 +1,11 @@
 // import { data } from "@serverless/cloud";
-import { Pipe } from "../utils/pipe.js";
+import { Pipe } from "peachmap";
 import mongo from "../utils/mongo.js";
 import authenticate from "../utils/authenticate.js";
 
 export default new Pipe({
   steps: {
-    mongoDeleteMany: function() {        
+    mongoDeleteMany: function() {    
       const { collection, req, next } = this;
       
       mongo.deleteMany(collection, req.body).then(next);

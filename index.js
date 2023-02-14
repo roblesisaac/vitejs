@@ -3,7 +3,7 @@ import passport from "passport";
 import { Strategy } from "passport-google-oauth20";
 import cookieParser from "cookie-parser";
 import jwt from "jsonwebtoken";
-import expressSession from "express-session";
+import session from "express-session";
 import tlsCheck from "tls-check";
 import crypto from "crypto";
 import rateLimit from "express-rate-limit";
@@ -12,15 +12,6 @@ import xss from "xss-clean";
 import bcrypt from "bcryptjs";
 
 import db from "./api/db.js";
-
-// create rate-limiter
-const limiter = rateLimit({
-  windowMs: 60 * 60 * 1000, // 15 minutes
-  max: 100, // limit each IP to 100 requests per windowMs
-  message: "Too many requests, please try again later."
-});
-
-api.use(limiter);
 
 const { 
   SESSION_ID, 
@@ -39,6 +30,30 @@ const ENCRYPT_KEY = JSON.parse(CRYPT_KEY);
 const ENCRYPT_IV = JSON.parse(CRYPT_IV);
 const hostName = CLOUD_URL.replace("https://", "");
 const domain = "."+hostName;
+
+api.use(session({
+  genid: req => req.sessionID,
+  secret: SESSION_ID,
+  resave: false,
+  saveUninitialized: true,
+  cookie: {
+    secure: true,
+    httpOnly: true,
+    sameSite: "strict",
+    domain,
+    maxAge: (60*60) * 1000,
+    signed: true
+  }
+}));
+
+// create rate-limiter
+const limiter = rateLimit({
+  windowMs: 60 * 60 * 1000, // 15 minutes
+  max: 100, // limit each IP to 100 requests per windowMs
+  message: "Too many requests, please try again later."
+});
+
+api.use(limiter);
 
 function ensureHttps(req, res, next) {
   if (req.hostname !== hostName) {
@@ -153,7 +168,7 @@ function logoutUser(req, res) {
   });
 }
 
-api.use(function (req, _res, next) {
+function setOrigin(req, _res, next) {
   var protocol = req.protocol;
 
   var hostHeaderIndex = req.rawHeaders.indexOf("Host") + 1;
@@ -171,8 +186,9 @@ api.use(function (req, _res, next) {
   });
 
   next();
-});
+}
 
+api.use(setOrigin);
 api.use(cookieParser(COOKIE_KEY));
 api.use(xss());
 api.use(ensureHttps);
@@ -183,23 +199,6 @@ api.use((req, res, next) => {
   }
   next();
 });
-
-api.use(expressSession({
-  genid: (req) => {
-    return req.sessionID;
-  },
-  secret: SESSION_ID,
-  resave: true,
-  saveUninitialized: true,
-  cookie: {
-    secure: true,
-    httpOnly: true,
-    sameSite: "strict",
-    domain,
-    maxAge: (60*60) * 1000,
-    signed: true
-  }
-}));
 
 // Initialize passport 
 api.use(passport.initialize());

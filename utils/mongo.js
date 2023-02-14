@@ -1,5 +1,5 @@
 import { params } from "@serverless/cloud";
-import { Pipe } from "./pipe.js";
+import { Pipe } from "peachmap";
 import fetch from "node-fetch";
 import validate from "./validate.js";
 
