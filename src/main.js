@@ -2,9 +2,9 @@ import { createApp } from "vue";
 import { createRouter, createWebHistory } from "vue-router";
 import App from "./App.vue";
 
-import HelloWorld from "./components/HelloWorld.vue";
+import HelloWorld from "./views/HelloWorld.vue";
 import SwiperVue from "./components/SwiperVue.vue";
-import LoginForm from "./components/LoginForm.vue";
+import LoginPage from "./views/LoginPage.vue";
 
 const router = createRouter({
     history: createWebHistory(),
@@ -19,7 +19,7 @@ const router = createRouter({
         },
         {
             path: "/login",
-            component: LoginForm
+            component: LoginPage
         }
     ]
 });
