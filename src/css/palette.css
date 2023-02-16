@@ -1,21 +1,45 @@
 :root {
-    --light-red: #ffb3ba;
-    --light-orange: #ffdfba;
-    --light-yellow: #ffffba;
-    --light-green: #baffc9;
-    --light-blue: #bae1ff;
-    --light-purple: #e2baff;
-    --red: #d9534f;
-    --orange: #ec971f;
-    --yellow: #f0ad4e;
-    --green: #5cb85c;
-    --blue: #5bc0de;
-    --purple: #9b59b6;
-    --dark-red: #a5120d;
-    --dark-orange: #9b591c;
-    --dark-yellow: #b68835;
-    --dark-green: #3e8f3e;
-    --dark-blue: #3498db;
-    --dark-purple: #7b3d91;
-  }
-  
+  /* Red colors */
+  --darkest-red: #6e0404;
+  --dark-red: #c71916;
+  --red: #ff685f;
+  --light-red: #ffa6a6;
+
+  /* Orange colors */
+  --darkest-orange: #8f3e1e;
+  --dark-orange: #d1602e;
+  --orange: #ffc34f;
+  --light-orange: #ffe2b3;
+
+  /* Yellow colors */
+  --darkest-yellow: #ab8c39;
+  --dark-yellow: #e3b04a;
+  --yellow: #ffd97a;
+  --light-yellow: #ffffc2;
+
+  /* Green colors */
+  --darkest-green: #2b852b;
+  --dark-green: #4ba04b;
+  --green: #72d172;
+  --light-green: #ccffcc;
+
+  /* Blue colors */
+  --darkest-blue: #2e6373;
+  --dark-blue: #4a8bb9;
+  --blue: #7dc4e6;
+  --light-blue: #d5edff;
+
+  /* Purple colors */
+  --darkest-purple: #5a235a;
+  --dark-purple: #9e4fa3;
+  --purple: #c97bcf;
+  --light-purple: #f3d1ff;
+
+  /* Neutral colors */
+  --f1: #ffffff;
+  --f2: #fafafa;
+  --f3: #f2f2f2;
+  --gray: #cccccc;
+  --dark-gray: #999999;
+  --black: #000000;
+}

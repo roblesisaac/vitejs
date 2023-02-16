@@ -1,20 +1,23 @@
 <template>
     <div class="grid">
-        <div class="col-1 col-md-1-3"><LoginForm /></div>
-        <div class="auto">Hello</div>
+        <div class="cell-1 cell-md-1-3"><LoginForm /></div>
+        <div class="auto">{{ message }}</div>
     </div>
 </template>
 
-<script>
+<script setup>
+import { ref } from "vue";
 import LoginForm from "../components/LoginForm.vue";
 
-export default {
-    name: "LoginPage",
-    created() {
-        console.log("his")
-    },
-    components: {
-        LoginForm
-    }
-}
+const message = "hello world";
+
+// export default {
+//     name: "LoginPage",
+//     created() {
+//         console.log("his")
+//     },
+//     components: {
+//         LoginForm
+//     }
+// }
 </script>

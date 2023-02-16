@@ -251,7 +251,7 @@ api.get(
   }
 );
 
-api.post("/signup", async (req, res) => {
+api.post("/signup/native", async (req, res) => {
   const { username, password, profile } = req.body;
 
   if (!username || !password) {
@@ -281,8 +281,12 @@ api.post("/signup", async (req, res) => {
 
   await data.set(`users:${username}`, payload);
 
-  res.json(payload);
-  
+  assignCookie(res, {
+    user: payload,
+    origin: CLOUD_URL
+  }, "auth");
+
+  res.json("Success"); 
 });
 
 api.post("/login/native", async (req, res) => {
@@ -293,7 +297,6 @@ api.post("/login/native", async (req, res) => {
       .status(400)
       .json({ message: `Missing "username" or "password" properties.` });
   }
-
 
   const getUserByUsername = (username, options) => data.get(`users:${username}`, options);
   const user = await getUserByUsername(username);
@@ -315,7 +318,7 @@ api.post("/login/native", async (req, res) => {
     origin: CLOUD_URL
   }, "auth");
   
-  res.json(user);
+  res.json("Success");
 });
 
 api.get("/logout", logoutUser);

@@ -17,7 +17,10 @@ export default {
 </script>
 
 <style>
-@import "/src/css/grid.css";
-@import "/src/css/utils.css";
-@import "/src/css/style.css";
+@import "css/palette.css";
+@import "css/grid.css";
+@import "css/utils.css";
+@import "css/colors.css";
+@import "css/style.css";
+@import "css/f-icons/foundation-icons.css";
 </style>
