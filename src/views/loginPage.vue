@@ -9,7 +9,7 @@
 import { ref } from "vue";
 import LoginForm from "../components/LoginForm.vue";
 
-const message = "hello world";
+const message = "hello worlds";
 
 // export default {
 //     name: "LoginPage",
