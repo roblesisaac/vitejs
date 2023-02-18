@@ -1,4 +1,4 @@
-import { api, http, params, data } from "@serverless/cloud";
+import { api, events, http, params, data } from "@serverless/cloud";
 import passport from "passport";
 import { Strategy } from "passport-google-oauth20";
 import cookieParser from "cookie-parser";
@@ -11,9 +11,13 @@ import { v4 as uuidv4 } from "uuid";
 import xss from "xss-clean";
 import bcrypt from "bcryptjs";
 
-import db from "./api/db.js";
+import db from "./api/db";
+import { isValidEmail, randomString } from "./src/utils";
+import userEvents from "./api/events/userEvents.js";
 
-const { 
+userEvents(data, events, params);
+
+const {
   SESSION_ID, 
   COOKIE_KEY,
   GOOGLE_ID,
@@ -25,11 +29,14 @@ const {
   RSA_PUBLIC
 } = params;
 
-const RSA = { PRIVATE: RSA_PRIVATE.replace(/\\n/g, '\n'), PUBLIC: RSA_PUBLIC.replace(/\\n/g, '\n') };
 const ENCRYPT_KEY = JSON.parse(CRYPT_KEY);
 const ENCRYPT_IV = JSON.parse(CRYPT_IV);
 const hostName = CLOUD_URL.replace("https://", "");
 const domain = "."+hostName;
+const RSA = { 
+  PRIVATE: RSA_PRIVATE.replace(/\\n/g, '\n'), 
+  PUBLIC: RSA_PUBLIC.replace(/\\n/g, '\n') 
+};
 
 api.use(session({
   genid: req => req.sessionID,
@@ -101,8 +108,8 @@ function decrypt(encrypted) {
 }
 
 function generateToken(payload) {
-  const expiration = Math.floor(Date.now() / 1000) + (60 * 60);
-  return jwt.sign({ payload, exp: expiration }, RSA.PRIVATE, { algorithm: "RS256" });
+  const exp = Math.floor(Date.now() / 1000) + (60 * 60);
+  return jwt.sign({ payload, exp }, RSA.PRIVATE, { algorithm: "RS256" });
 }
 
 function assignCookie(res, data, cookieName) {
@@ -119,6 +126,10 @@ function assignCookie(res, data, cookieName) {
   });
 }
 
+function decodeJWT(token) {
+  return jwt.verify(token, RSA.PUBLIC, { algorithm: "RS256" });
+}
+
 function verify(req, res, next) {
   const encrypted = req.signedCookies.auth;
 
@@ -129,7 +140,7 @@ function verify(req, res, next) {
   
   try {
     const decrypted = decrypt(encrypted);
-    const decoded = jwt.verify(decrypted, RSA.PUBLIC, { algorithm: "RS256" });
+    const decoded = decodeJWT(decrypted);
     const { payload, exp, iat } = decoded;
     const { user, origin } = payload;
 
@@ -137,10 +148,10 @@ function verify(req, res, next) {
       throw new Error("Token has expired");
     }
 
-    if (req.origin !== origin) {
-      console.log("Error validating cookie.");
-      throw new Error("Invalid cookie origin");
-    }
+    // if (req.origin !== origin) {
+    //   console.log("Error validating cookie.");
+    //   throw new Error("Invalid cookie origin");
+    // }
 
     req.user = user;
     
@@ -252,22 +263,28 @@ api.get(
 );
 
 api.post("/signup/native", async (req, res) => {
-  const { username, password, profile } = req.body;
+  const { email, password, profile } = req.body;
 
-  if (!username || !password) {
+  if (!email || !password) {
     return res
       .status(400)
-      .json({ message: `Missing "username" or "password" properties.` });
+      .json(`Missing "email" or "password" properties.`);
   }
 
-  const usernameExists = await data.get(`users:${username}`);
+  if(!isValidEmail(email)) {
+    return res
+      .status(400)
+      .json(`Email: "${ email }" is invalid. Please enter a valid email address.`);
+  }
 
-  if (usernameExists) {
-    return res.status(400).json({ message: `Username ${username} already exists.` });
+  const emailExists = await data.get(`users:${email}`);
+
+  if (emailExists) {
+    return res.status(400).json(`Email ${email} already exists.`);
   }
 
   if (password.length < 8) {
-    return res.status(400).json({ message: `Password must be at least 8 character.` });
+    return res.status(400).json(`Password must be at least 8 character.`);
   }
   
   async function hashPassword(password) {
@@ -276,10 +293,13 @@ api.post("/signup/native", async (req, res) => {
   }
 
   const hash = await hashPassword(password);
+  const status = randomString();
+  const payload = { email, hash, profile, status };
 
-  const payload = { username, hash, profile };
-
-  await data.set(`users:${username}`, payload);
+  await data.set(`users:${email}`, payload);
+  await events.publish("user.joined", payload);
+  await events.publish("user.checkForVerificationWarning", { after: "20 seconds" }, payload);
+  await events.publish("user.checkForVerification", { after: "30 seconds" }, { email });
 
   assignCookie(res, {
     user: payload,
@@ -289,20 +309,46 @@ api.post("/signup/native", async (req, res) => {
   res.json("Success"); 
 });
 
-api.post("/login/native", async (req, res) => {
-  const { username, password } = req.body;
+api.get("/signup/verify/:encrypted", async (req, res) => {
+  const { encrypted } = req.params;
 
-  if (!username || !password) {
-    return res
-      .status(400)
-      .json({ message: `Missing "username" or "password" properties.` });
+  const decrypted = decrypt(encrypted);
+  const decoded = decodeJWT(decrypted);
+  const { email, status } = decoded.payload;
+
+  const user = await data.get(`users:${email}`);
+
+  if(!user) {
+    return res.send(`<h1>${ email } not found. Please, <a href="${CLOUD_URL}">Click Here</a> to sign up.</h1>`);
   }
 
-  const getUserByUsername = (username, options) => data.get(`users:${username}`, options);
-  const user = await getUserByUsername(username);
+  // check if user.status is equal to the random string assigned at signup
+  if(user.status === status) {
+    user.status = "verified";
+    await data.set(`users:${email}`, user);
+  }
+
+  if(user.status === "verified") {
+    return res.redirect("/");
+  }
+
+  res.send(`<h1>${ email } not found. Please, <a href="${CLOUD_URL}">Click Here</a> to sign up.</h1>`);
+});
+
+api.post("/login/native", async (req, res) => {
+  const { email, password } = req.body;
+
+  if (!email || !password) {
+    return res
+      .status(400)
+      .json(`Missing "email" or "password" properties.`);
+  }
+
+  const getUserByEmail = (email, options) => data.get(`users:${email}`, options);
+  const user = await getUserByEmail(email);
 
   if (!user) {
-    return res.status(400).json({ message: `Username ${username} does not exist.` });
+    return res.status(400).json(`Email ${email} does not exist.`);
   }
 
   const isCorrectPassword = await bcrypt.compare(password, user.hash);
@@ -310,14 +356,14 @@ api.post("/login/native", async (req, res) => {
   if (!isCorrectPassword) {
     return res
       .status(400)
-      .json({ message: `The password you provided is not correct.` });
+      .json(`The password you provided is not correct.`);
   }
 
   assignCookie(res, {
-    user: user,
+    user,
     origin: CLOUD_URL
   }, "auth");
-  
+
   res.json("Success");
 });
 

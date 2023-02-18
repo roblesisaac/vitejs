@@ -1,7 +1,7 @@
 // import { data } from "@serverless/cloud";
 import { Pipe } from "peachmap";
-import mongo from "../utils/mongo.js";
-import authenticate from "../utils/authenticate.js";
+import mongo from "./utils/mongo.js";
+import authenticate from "./utils/authenticate.js";
 
 export default new Pipe({
   steps: {

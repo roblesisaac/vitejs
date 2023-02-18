@@ -2,7 +2,7 @@
   <div class="hello">
     <h1>Aloha</h1>
     <p>
-      <img alt="Vue logo" src="../assets/van.jpeg" height="100" />
+      <img alt="Vue logo" src="../assets/icon.svg" height="100" />
     </p>
     <p>
       The information below is being fetched from your Serverless Cloud API:
