@@ -1,9 +1,9 @@
 // import { data } from "@serverless/cloud";
-import { Pipe } from "peachmap";
+import { Aid } from "aidme";
 import mongo from "./utils/mongo.js";
 import authenticate from "./utils/authenticate.js";
 
-export default new Pipe({
+export default new Aid({
   steps: {
     mongoDeleteMany: function() {    
       const { collection, req, next } = this;

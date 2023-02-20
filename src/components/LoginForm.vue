@@ -47,9 +47,7 @@
         </div>
         <br /><br />
         <Transition>
-          <div v-if="notification" class="cell-1 center bgLightRed colorF1 r3 shadow p15">
-            {{  notification }}
-          </div>
+          <div v-if="notification" class="cell-1 center bgRed colorF1 r3 shadow p15" v-html="notification"></div>
         </Transition>
       </form>
     </div>
@@ -66,7 +64,7 @@
   
 <script setup>
 import { ref, nextTick } from "vue";
-import { Pipe } from "peachmap";
+import { Aid } from "aidme";
 
 import { isValidEmail } from "../utils"
 
@@ -92,7 +90,7 @@ function notify(message) {
     return;
   }
 
-  notification.value = message.message || message;
+  notification.value = message;
 
   setTimeout(() => {
     notification.value = false;

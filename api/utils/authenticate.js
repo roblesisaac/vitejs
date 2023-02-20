@@ -1,7 +1,7 @@
-import { Pipe } from "peachmap";
+import { Aid } from "aidme";
 import mongo from "./mongo.js";
 
-export default new Pipe({
+export default new Aid({
   steps: {
     fetchPermitForUser: function(res, next) {
       const filter = this.user;

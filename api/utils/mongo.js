@@ -1,9 +1,9 @@
 import { params } from "@serverless/cloud";
-import { Pipe } from "peachmap";
+import { Aid } from "aidme";
 import fetch from "node-fetch";
 import validate from "./validate.js";
 
-export default new Pipe({
+export default new Aid({
   data: { 
     url: `https://data.mongodb-api.com/app/${params.DB_ID}/endpoint/data/v1/action/`
   },
