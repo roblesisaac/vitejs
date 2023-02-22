@@ -116,7 +116,7 @@ function loginNative(e) {
   }
 
   if(!isValidEmail(email)) {
-    return notify(`Email: "${ email }" is invalid. Please enter a valid email address.`);
+    return notify(`The email <b>${email}</b> is invalid. Please enter a valid email address.`);
   }
 
   if(method) {

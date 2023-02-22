@@ -199,6 +199,12 @@ function setOrigin(req, _res, next) {
   next();
 }
 
+async function publishUserEvent(payload, email) {
+  await events.publish("user.joined", payload);
+  // await events.publish("user.checkForVerificationWarning", { after: "24 hours" }, payload);
+  // await events.publish("user.checkForVerification", { after: "48 hours" }, { email });
+}
+
 api.use(setOrigin);
 api.use(cookieParser(COOKIE_KEY));
 api.use(xss());
@@ -223,9 +229,19 @@ passport.use(
     callbackURL: `${CLOUD_URL}/login/auth/google/callback`,
     passReqToCallback: true
   },
-  (req, accessToken, refreshToken, profile, cb) => {
-    // save to db;
-    // console.log("save to db");
+  async (req, accessToken, refreshToken, profile, cb) => {
+    const { email } = JSON.parse(profile._raw);
+    const emailExists = await data.get(`users:${email}`);
+
+    if(!emailExists) {
+      const status = randomString();
+      const payload = { email, accessToken, refreshToken, status };
+      await data.set(`users:${email}`, payload);
+      publishUserEvent(payload, email);
+    } else {      	
+      await data.set(`users:${email}`,{ accessToken });
+    }
+
     const validClientHost = validateHostName("."+req.headers.host, domain);
 
     if(!validClientHost) cb(new Error("Invalid hostname"));
@@ -297,9 +313,7 @@ api.post("/signup/native", async (req, res) => {
   const payload = { email, hash, profile, status };
 
   await data.set(`users:${email}`, payload);
-  await events.publish("user.joined", payload);
-  await events.publish("user.checkForVerificationWarning", { after: "20 seconds" }, payload);
-  await events.publish("user.checkForVerification", { after: "30 seconds" }, { email });
+  publishUserEvent(payload, email);
 
   assignCookie(res, {
     user: payload,
@@ -348,7 +362,11 @@ api.post("/login/native", async (req, res) => {
   const user = await getUserByEmail(email);
 
   if (!user) {
-    return res.status(400).json(`Email ${email} does not exist.`);
+    return res.status(400).json(`Sorry, we couldn't find an account associated with <b>${email}</b>. Please sign up to create an account and start using our services.`);
+  }
+
+  if(!user.hash) {
+    return res.status(400).json(`The email <b>${email}</b> is already associated with a Google account. Please log in using your Google account.`);
   }
 
   const isCorrectPassword = await bcrypt.compare(password, user.hash);
