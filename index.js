@@ -362,7 +362,7 @@ api.post("/login/native", async (req, res) => {
   const user = await getUserByEmail(email);
 
   if (!user) {
-    return res.status(400).json(`Sorry, we couldn't find an account associated with <b>${email}</b>. Please sign up to create an account and start using our services.`);
+    return res.status(400).json(`Sorry, we couldn't find an account associated with <b>${email}</b>. Please sign up to create an account.`);
   }
 
   if(!user.hash) {
