@@ -4,7 +4,7 @@ import App from "./App.vue";
 
 import HelloWorld from "./views/HelloWorld.vue";
 import SwiperVue from "./components/SwiperVue.vue";
-import LoginPage from "./views/LoginView.vue";
+import LoginView from "./views/LoginView.vue";
 
 const router = createRouter({
     history: createWebHistory(),
