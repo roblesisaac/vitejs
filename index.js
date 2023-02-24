@@ -73,7 +73,7 @@ async function publishUserEvent(payload, email) {
   // await events.publish('user.checkForVerification', { after: '48 hours' }, { email });
 }
 
-function validateHostName(clientHost, validHost) {
+function isValidClientHost(clientHost, validHost) {
   return clientHost === validHost;
 }
 
@@ -139,12 +139,10 @@ async function authGoogleUser(req, accessToken, refreshToken, profile, done) {
     user.status = randomString();
     publishUserEvent(user, email);
   }
-  
+
   await data.set(`users:${email}`, user);
 
-  const validClientHost = validateHostName('.'+req.headers.host, domain);
-
-  if(!validClientHost) {
+  if(!isValidClientHost('.'+req.headers.host, domain)) {
     return done(new Error('Invalid hostname'));
   }
 
