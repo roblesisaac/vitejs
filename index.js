@@ -59,20 +59,6 @@ api.use((req, res, next) => {
 api.use(passport.initialize());
 api.use(passport.session());
 
-function verify(req, res, next) {
-  if(!req.isAuthenticated()) {
-    return res.redirect('/login');
-  }
-
-  next();
-}
-
-async function publishUserEvent(payload, email) {
-  // await events.publish('user.joined', payload);
-  // await events.publish('user.checkForVerificationWarning', { after: '24 hours' }, payload);
-  // await events.publish('user.checkForVerification', { after: '48 hours' }, { email });
-}
-
 function loginUser(req, res, user) {
   return req.logIn(user, (err) => {
     if (err) { 
@@ -83,9 +69,30 @@ function loginUser(req, res, user) {
   });
 }
 
+async function publishUserEvent(payload, email) {
+  // await events.publish('user.joined', payload);
+  // await events.publish('user.checkForVerificationWarning', { after: '24 hours' }, payload);
+  // await events.publish('user.checkForVerification', { after: '48 hours' }, { email });
+}
+
 function validateHostName(clientHost, validHost) {
   return clientHost === validHost;
 }
+
+function verify(req, res, next) {
+  if(!req.isAuthenticated()) {
+    return res.redirect('/login');
+  }
+
+  next();
+}
+
+passport.serializeUser((user, done) => {
+  done(null, user);
+});
+passport.deserializeUser((obj, done) => {
+  done(null, obj);
+});
 
 passport.use(new LocalStrategy(
   { usernameField: 'email' },
@@ -121,13 +128,6 @@ passport.use(new LocalStrategy(
     return done(null, user);
   }
 ));
-
-passport.serializeUser((user, done) => {
-  done(null, user);
-});
-passport.deserializeUser((obj, done) => {
-  done(null, obj);
-});
 
 passport.use(
   new GoogleStrategy({
