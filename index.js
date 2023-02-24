@@ -133,15 +133,14 @@ passport.use(
 async function authGoogleUser(req, accessToken, refreshToken, profile, done) {
   const { email } = JSON.parse(profile._raw);
   const emailExists = await data.get(`users:${email}`);
+  let user = { email, accessToken, refreshToken };
 
   if(!emailExists) {
-    const status = randomString();
-    const payload = { email, accessToken, refreshToken, status };
-    await data.set(`users:${email}`, payload);
-    publishUserEvent(payload, email);
-  } else {      	
-    await data.set(`users:${email}`,{ accessToken });
+    user.status = randomString();
+    publishUserEvent(user, email);
   }
+  
+  await data.set(`users:${email}`, user);
 
   const validClientHost = validateHostName('.'+req.headers.host, domain);
 
@@ -149,7 +148,7 @@ async function authGoogleUser(req, accessToken, refreshToken, profile, done) {
     return done(new Error('Invalid hostname'));
   }
 
-  return done(null, { accessToken, refreshToken, profile });
+  return done(null, user);
 }
 
 passport.use(
