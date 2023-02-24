@@ -131,9 +131,9 @@ passport.use(
 );
 
 async function authGoogleUser(req, accessToken, refreshToken, profile, done) {
-  const { email } = JSON.parse(profile._raw);
-  const emailExists = await data.get(`users:${email}`);
-  let user = { email, accessToken, refreshToken };
+  const { email } = JSON.parse(profile._raw),
+        user = { email, accessToken, refreshToken },
+        emailExists = await data.get(`users:${email}`);
 
   if(!emailExists) {
     user.status = randomString();
