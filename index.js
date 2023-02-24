@@ -13,8 +13,6 @@ import { isValidEmail, randomString } from './src/utils';
 import userEvents from './api/events/userEvents.js';
 import CustomStore from './api/utils/CustomStore';
 
-userEvents(data, events, params);
-
 const {
   SESSION_ID, 
   GOOGLE_ID,
@@ -87,6 +85,8 @@ function verify(req, res, next) {
   next();
 }
 
+userEvents(data, events, params);
+
 passport.serializeUser((user, done) => {
   done(null, user);
 });
@@ -94,40 +94,63 @@ passport.deserializeUser((obj, done) => {
   done(null, obj);
 });
 
-passport.use(new LocalStrategy(
-  { usernameField: 'email' },
-  async function(email, password, done) {
-    let errorMessage;
+async function authLocalUser(email, password, done) {
+  let errorMessage;
 
-    if (!email || !password) {
-      errorMessage = `Missing "email" or "password" properties.`;
-      return done(errorMessage, false);
-    }
-  
-    const user = await data.get(`users:${email}`);
-  
-    if (!user) {
-      errorMessage = `Sorry, we couldn't find an account associated with <b>${email}</b>. Please sign up to create an account.`;
-
-      return done(errorMessage, false);
-    }
-  
-    if(!user.hash) {
-      errorMessage = `The email <b>${email}</b> is already associated with a Google account. Please log in using your Google account.`;
-
-      return done(errorMessage, false);
-    }
-  
-    const isCorrectPassword = await bcrypt.compare(password, user.hash);
-  
-    if (!isCorrectPassword) {
-      errorMessage = `The password you provided is not correct.`;
-      return done(errorMessage, false);
-    }
-
-    return done(null, user);
+  if (!email || !password) {
+    errorMessage = `Missing "email" or "password" properties.`;
+    return done(errorMessage, false);
   }
-));
+
+  const user = await data.get(`users:${email}`);
+
+  if (!user) {
+    errorMessage = `Sorry, we couldn't find an account associated with <b>${email}</b>. Please sign up to create an account.`;
+
+    return done(errorMessage, false);
+  }
+
+  if(!user.hash) {
+    errorMessage = `The email <b>${email}</b> is already associated with a Google account. Please log in using your Google account.`;
+
+    return done(errorMessage, false);
+  }
+
+  const isCorrectPassword = await bcrypt.compare(password, user.hash);
+
+  if (!isCorrectPassword) {
+    errorMessage = `The password you provided is incorrect.`;
+    return done(errorMessage, false);
+  }
+
+  return done(null, user);
+}
+
+passport.use(
+  new LocalStrategy({ usernameField: 'email' }, authLocalUser)
+);
+
+async function authGoogleUser(req, accessToken, refreshToken, profile, done) {
+  const { email } = JSON.parse(profile._raw);
+  const emailExists = await data.get(`users:${email}`);
+
+  if(!emailExists) {
+    const status = randomString();
+    const payload = { email, accessToken, refreshToken, status };
+    await data.set(`users:${email}`, payload);
+    publishUserEvent(payload, email);
+  } else {      	
+    await data.set(`users:${email}`,{ accessToken });
+  }
+
+  const validClientHost = validateHostName('.'+req.headers.host, domain);
+
+  if(!validClientHost) {
+    return done(new Error('Invalid hostname'));
+  }
+
+  return done(null, { accessToken, refreshToken, profile });
+}
 
 passport.use(
   new GoogleStrategy({
@@ -136,27 +159,7 @@ passport.use(
     callbackURL: `${CLOUD_URL}/login/auth/google/callback`,
     passReqToCallback: true
   },
-  async (req, accessToken, refreshToken, profile, done) => {
-    const { email } = JSON.parse(profile._raw);
-    const emailExists = await data.get(`users:${email}`);
-
-    if(!emailExists) {
-      const status = randomString();
-      const payload = { email, accessToken, refreshToken, status };
-      await data.set(`users:${email}`, payload);
-      publishUserEvent(payload, email);
-    } else {      	
-      await data.set(`users:${email}`,{ accessToken });
-    }
-
-    const validClientHost = validateHostName('.'+req.headers.host, domain);
-
-    if(!validClientHost) {
-      return done(new Error('Invalid hostname'));
-    }
-
-    return done(null, { accessToken, refreshToken, profile });
-  })
+  authGoogleUser)
 );
 
 api.post('/login/native', 
