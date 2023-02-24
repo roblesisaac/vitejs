@@ -4,7 +4,11 @@ import vue from '@vitejs/plugin-vue'
 
 export default defineConfig({
   build: {
-    outDir: "./static"
+    outDir: "./static",
+    // minify: "terser",
+    // terserOptions: {
+    //   mangle: false
+    // }
   },
   plugins: [
     vue(),

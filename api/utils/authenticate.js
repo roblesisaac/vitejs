@@ -1,4 +1,4 @@
-import { Aid } from "aidme";
+import { Aid } from "./aidkit";
 import mongo from "./mongo.js";
 
 export default new Aid({

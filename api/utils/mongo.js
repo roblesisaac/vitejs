@@ -1,5 +1,5 @@
 import { params } from "@serverless/cloud";
-import { Aid } from "aidme";
+import { Aid } from "./aidkit";
 import fetch from "node-fetch";
 import validate from "./validate.js";
 

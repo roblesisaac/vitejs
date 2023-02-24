@@ -64,9 +64,9 @@
   
 <script setup>
 import { ref, nextTick } from "vue";
-import { Aid } from "aidme";
+import { Aid } from "../../api/utils/aidkit";
 
-import { isValidEmail } from "../utils"
+import { isValidEmail, api } from "../utils"
 
 const login = ref({
   email: "",
@@ -124,28 +124,18 @@ function loginNative(e) {
   }
   
   const url =  `/${method}/native`;
-  const payload = {
-    method: "POST",
-    body: JSON.stringify(login.value),
-    headers: {
-      "Content-Type": "application/json"
-    }
-  };
 
-  const redirect = () => window.location = "/";
-
-  fetch(url, payload).then((res) => {
-    if(res.ok) {
-      redirect();
-      return;
+  api.post(url, login.value).then(res => {
+    if(res == "Success") {
+      return window.location = "/";
     }
-    
-    return res.json();
-  }).then(notify)
+
+    notify(res);
+  });
 }
 
 function loginWithGoogle() {
-  window.location.pathname += "/auth/google";
+  window.location = "/login/auth/google";
 }
 </script>
   

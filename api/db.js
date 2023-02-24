@@ -1,5 +1,5 @@
 // import { data } from "@serverless/cloud";
-import { Aid } from "aidme";
+import { Aid } from "./utils/aidkit";
 import mongo from "./utils/mongo.js";
 import authenticate from "./utils/authenticate.js";
 

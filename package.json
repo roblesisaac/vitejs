@@ -15,7 +15,6 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "aidme": "^1.0.0",
     "bcryptjs": "^2.4.3",
     "cookie-parser": "^1.4.6",
     "express-rate-limit": "^6.7.0",
@@ -26,6 +25,7 @@
     "nodemailer-plugin-inline-base64": "^2.1.1",
     "passport": "^0.6.0",
     "passport-google-oauth20": "^2.0.0",
+    "passport-local": "^1.0.0",
     "swiper": "^8.4.6",
     "tls-check": "^1.0.0",
     "uuid": "^9.0.0",
