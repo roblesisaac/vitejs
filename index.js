@@ -95,23 +95,21 @@ passport.deserializeUser((obj, done) => {
 });
 
 async function authLocalUser(email, password, done) {
-  let errorMessage;
-
   if (!email || !password) {
-    errorMessage = `Missing "email" or "password" properties.`;
+    let errorMessage = `Missing "email" or "password" properties.`;
     return done(errorMessage, false);
   }
 
   const user = await data.get(`users:${email}`);
 
   if (!user) {
-    errorMessage = `Sorry, we couldn't find an account associated with <b>${email}</b>. Please sign up to create an account.`;
+    let errorMessage = `Sorry, we couldn't find an account associated with <b>${email}</b>. Please sign up to create an account.`;
 
     return done(errorMessage, false);
   }
 
   if(!user.hash) {
-    errorMessage = `The email <b>${email}</b> is already associated with a Google account. Please log in using your Google account.`;
+    let errorMessage = `The email <b>${email}</b> is already associated with a Google account. Please log in using your Google account.`;
 
     return done(errorMessage, false);
   }
@@ -119,7 +117,7 @@ async function authLocalUser(email, password, done) {
   const isCorrectPassword = await bcrypt.compare(password, user.hash);
 
   if (!isCorrectPassword) {
-    errorMessage = `The password you provided is incorrect.`;
+    let errorMessage = `The password you provided is incorrect.`;
     return done(errorMessage, false);
   }
 
@@ -178,10 +176,7 @@ api.get(
 
 api.get(
   '/login/auth/google/callback', 
-  passport.authenticate('google', { failureRedirect: '/login' }), 
-  (req, res) => {
-    res.redirect('/');
-  }
+  passport.authenticate('google', { successRedirect: '/', failureRedirect: '/login' })
 );
 
 api.post("/signup/native", async (req, res) => {
