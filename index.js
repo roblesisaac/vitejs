@@ -148,13 +148,15 @@ async function authGoogleUser(req, accessToken, refreshToken, profile, done) {
 }
 
 passport.use(
-  new GoogleStrategy({
-    clientID: GOOGLE_ID,
-    clientSecret: GOOGLE_SECRET,
-    callbackURL: `${CLOUD_URL}/login/auth/google/callback`,
-    passReqToCallback: true
-  },
-  authGoogleUser)
+  new GoogleStrategy(
+    {
+      clientID: GOOGLE_ID,
+      clientSecret: GOOGLE_SECRET,
+      callbackURL: `${CLOUD_URL}/login/auth/google/callback`,
+      passReqToCallback: true
+    },
+    authGoogleUser
+  )
 );
 
 api.post('/login/native', 
