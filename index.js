@@ -80,6 +80,13 @@ const hostName = CLOUD_URL.replace('https://', '');
 const domain = '.'+hostName;
 const users = records("users");
 
+const GoogleConfig = {
+  clientID: GOOGLE_ID,
+  clientSecret: GOOGLE_SECRET,
+  callbackURL: `${CLOUD_URL}/login/auth/google/callback`,
+  passReqToCallback: true
+};
+
 api.use(session({
   genid: req => req.sessionID,
   secret: SESSION_ID,
@@ -227,28 +234,23 @@ async function authGoogleUser(req, accessToken, refreshToken, profile, done) {
 }
 
 passport.use(
-  new GoogleStrategy(
-    {
-      clientID: GOOGLE_ID,
-      clientSecret: GOOGLE_SECRET,
-      callbackURL: `${CLOUD_URL}/login/auth/google/callback`,
-      passReqToCallback: true
-    },
-    authGoogleUser
-  )
+  new GoogleStrategy(GoogleConfig, authGoogleUser)
 );
 
-api.post('/login/native', 
-  (req, res, next) => {
-    passport.authenticate('local', (err, user) => {
-      if (err) { 
-        return res.status(400).json(err); 
-      }
+api.post('/login/native', (req, res, next) => {
+  const callback = (err, user) => {
+    if (err) { 
+      return res.status(400).json(err); 
+    }
+  
+    loginUser(req, res, user);
+  };
 
-      loginUser(req, res, user);
-    })(req, res, next);
-  }
-);
+  const InitLocal = passport.authenticate('local', callback);
+  InitLocal(req, res, next);
+});
+
+
 
 api.get(
   '/login/auth/google',
