@@ -114,13 +114,15 @@ api.use((req, res, next) => {
 api.use(passport.initialize());
 api.use(passport.session());
 
-function createNewUser(email, value) {
+async function createNewUser(email, value) {
   const _id = buildId(),
         key = `users:${_id}`;
 
   publishUserEvent(value, email);
+  await data.set(key, value, { label1: email });
+  value.key = key;
 
-  return data.set(key, value, { label1: email });
+  return value;
 }
 
 function loginUser(req, res, user) {
@@ -214,8 +216,7 @@ async function authGoogleUser(req, accessToken, refreshToken, profile, done) {
   userData.accessToken = accessToken;
 
   if(!existingUser) {
-    await createNewUser(email, userData);
-    const newUser = await users.getOne({ email });
+    const newUser = await createNewUser(email, userData);
 
     return done(null, newUser);
   }
@@ -290,10 +291,7 @@ api.post("/signup/native", async (req, res) => {
   }
 
   const hash = await hashPassword(password);
-  
-  await createNewUser(email, { hash });
-
-  const newUser = await users.getOne({ email });
+  const newUser = await createNewUser(email, { hash });
 
   loginUser(req, res, newUser);
 });
