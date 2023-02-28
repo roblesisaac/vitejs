@@ -22,64 +22,66 @@ export function randomString(length=8) {
     return result;
 }
 
-const api = (function() {
-    const handler = async function(method, url, body) {
-        let payload = {
-            method,
-            headers: {
-              "Content-Type": "application/json"
-            }
-        };
+export function buildId(timestamp) {
+    timestamp = timestamp || new Date().getTime().toString(16);
+    const random = Math.random().toString(16).substring(2);
+    return timestamp + random;
+}
 
-        if(body) payload.body = JSON.stringify(body);
+// const api = (function() {
+//     const handler = async function(method, url, body) {
+//         let payload = {
+//             method,
+//             headers: {
+//               "Content-Type": "application/json"
+//             }
+//         };
 
-        const res = await fetch(url, payload);
-        return await res.json();
-    };
+//         if(body) payload.body = JSON.stringify(body);
 
-    return { 
-        get: url => handler("get", url),
-        put: (url, body) => handler("put", url, body),
-        post: (url, body) => handler("post", url, body),
-        delete: url => handler("delete", url)
-    };
-})();
+//         const res = await fetch(url, payload);
+//         return await res.json();
+//     };
 
-// const api = new Aid({
-//     steps: {
-//         handler: function() {
-//             const { next, method, url, body } = this;
+//     return { 
+//         get: url => handler("get", url),
+//         put: (url, body) => handler("put", url, body),
+//         post: (url, body) => handler("post", url, body),
+//         delete: url => handler("delete", url)
+//     };
+// })();
 
-//             let payload = {
-//                 method,
-//                 headers: {
-//                   "Content-Type": "application/json"
-//                 }
-//             };
+const api = new Aid({
+    steps: {
+        handler: function(method, url, body) {
+            let payload = {
+                method,
+                headers: {
+                  "Content-Type": "application/json"
+                }
+            };
 
-//             if(body) payload.body = JSON.stringify(body);
+            if(body) payload.body = JSON.stringify(body);
 
-//             fetch(url, payload).then(res => res.json()).then(next);
-//         }
-//     },
-//     instruct: {
-//         get: (url) => [
-//             { url, method: "GET" },
-//             "handler"
-//         ],
-//         put: (url, body) => [
-//             { url, body, method: "PUT" },
-//             "handler"
-//         ],
-//         post: (url, body) => [
-//             { url, body, method: "POST" },
-//             "handler"
-//         ],
-//         delete: (url) => [
-//             { url, method: "DELETE" },
-//             "handler"
-//         ]
-//     }
-// });
+            fetch(url, payload)
+                .then(res => res.json())
+                .then(this.next);
+        }
+    },
+    instruct: {
+        get: (url) => [
+            { handler: ["GET", url] }
+        ],
+        put: (url, body) => [
+            { handler: ["PUT", url, body] }
+        ],
+        post: (url, body) => [
+            { handler: ["POST", url, body] }
+        ],
+        delete: (url) => [
+            { handler: ["DELETE", url] }
+        ]
+    }
+});
 
 export { api };

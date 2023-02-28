@@ -16,16 +16,16 @@ export default new Aid({
 
       mongo.deleteOne(collection, id).then(next);
     },
-    mongoFind: function(res, next) {
-      const { collection, req } = this,
+    mongoFind: function() {
+      const { collection, req, next } = this,
           filter = req.query;
 
       filter._limit = filter._limit || 50;
       
       mongo.find(collection, filter).then(next);
     },
-    mongoFindOne: function(res, next) {
-      const { collection, req } = this,
+    mongoFindOne: function() {
+      const { collection, req, next } = this,
           filter = req.query;
 
       filter._id = req.params.id;
@@ -56,6 +56,7 @@ export default new Aid({
     ],
     _setup: (req, res) => [
       {
+        // res, // only needed when vite build minifies
         params: req.params,
         collection: "params.component"
       },

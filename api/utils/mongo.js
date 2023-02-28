@@ -34,21 +34,21 @@ export default new Aid({
         .then(next)
         .catch(next);
     },
-    buildDeleteManyOptions: function(res, next, learn) {
-      const { collection, filter } = this,
+    buildDeleteManyOptions: function() {
+      const { collection, filter, learn } = this,
           options = { filter };
         
       learn({ options });
     },
-    buildDeleteOneOptions: function(res, next, learn) {
-      const { id } = this,
+    buildDeleteOneOptions: function() {
+      const { id, learn } = this,
           filter = { _id: { $oid: id } },
           options = { filter };
 
       learn({ options });
     },
-    buildFindOptions: function(res, next, learn) {
-      let { filter } = this;
+    buildFindOptions: function() {
+      let { filter, learn } = this;
       const options = {};
 
       filter = filter || {};
@@ -99,8 +99,8 @@ export default new Aid({
       
       learn({ options });
     },
-    buildInsertOptions: function(res, next, learn) {
-      const { data } = this,
+    buildInsertOptions: function() {
+      const { data, learn } = this,
           options = {},
           propName = Array.isArray(data) ? "documents" : "document";
 
@@ -108,8 +108,8 @@ export default new Aid({
 
       learn({ options });
     },
-    buildUpdateOneOptions: function(res, next, learn) {
-      const { collection, id, body } = this,
+    buildUpdateOneOptions: function() {
+      const { collection, id, body, learn } = this,
       filter = { _id: { $oid: id } },
       update = { $set: body },
       options = { filter, update };
@@ -122,7 +122,8 @@ export default new Aid({
 
       next(specials.includes(collection));
     },
-    returnOnlyDocuments: function(last, next) {
+    returnOnlyDocuments: function(last) {
+      const { next } = this;
       const data = Object.keys(last).length 
                     ? last.document || last.documents || last 
                     : last;

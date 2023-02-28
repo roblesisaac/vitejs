@@ -9,9 +9,66 @@ import xss from 'xss-clean';
 import bcrypt from 'bcryptjs';
 
 import db from './api/db';
-import { isValidEmail, randomString } from './src/utils';
+import records from './api/utils/records';
+import { buildId, isValidEmail, randomString } from './src/utils';
 import userEvents from './api/events/userEvents.js';
-import CustomStore from './api/utils/CustomStore';
+
+const CustomStore = function(connect) {
+  const Store = connect.Store || connect.sessionStore;
+
+  return class CustomStore extends Store {
+      constructor() {
+          super()
+      }
+
+      async get(sid, callback) {
+          const session = await data.get(`sessions:${sid}`);
+      
+          if (!session) {
+            return callback(null, null);
+          }
+      
+          const sess = JSON.parse(session),
+              cookie = sess ? sess.cookie : null;
+      
+          if (cookie && cookie.expires) {
+              cookie.expires = new Date(cookie.expires);
+          }
+          
+          if (cookie.expires < new Date()) {
+              await this.destroy(sid);
+              return callback(null, null);
+          }
+      
+          return callback(null, sess);
+      }
+
+      async set(sessionId, session, next) {
+          try {
+            console.log({ session })
+              const id = `sessions:${sessionId}`;
+              const payload = JSON.stringify(session);
+
+              const result = await data.set(id, payload, { ttl: 10 });
+              next(null, result);
+          } catch (err) {
+              next(err);
+          }
+      }
+
+      async destroy(sessionId, next) {
+          try {
+              const result = await data.remove(`sessions:${sessionId}`);
+
+              if (typeof next == "function") next(null, result);
+          } catch (err) {
+              console.log(err);
+              if(typeof next == "function") next(err);
+          }
+      }
+
+  }
+}
 
 const {
   SESSION_ID, 
@@ -22,19 +79,20 @@ const {
 
 const hostName = CLOUD_URL.replace('https://', '');
 const domain = '.'+hostName;
+const users = records("users");
 
 api.use(session({
   genid: req => req.sessionID,
   secret: SESSION_ID,
   resave: false,
-  saveUninitialized: true,
+  saveUninitialized: false,
   store: new (CustomStore(session))(),
   cookie: {
     secure: true,
     httpOnly: true,
     sameSite: 'strict',
     domain,
-    maxAge: (60*60) * 1000,
+    maxAge: 10*1000, //(60*60) * 1000,
     signed: true
   }
 }));
@@ -57,6 +115,15 @@ api.use((req, res, next) => {
 api.use(passport.initialize());
 api.use(passport.session());
 
+function createNewUser(email, value) {
+  const _id = buildId(),
+        key = `users:${_id}`;
+
+  publishUserEvent(value, email);
+
+  return data.set(key, value, { label1: email });
+}
+
 function loginUser(req, res, user) {
   return req.logIn(user, (err) => {
     if (err) { 
@@ -68,6 +135,15 @@ function loginUser(req, res, user) {
 }
 
 async function publishUserEvent(payload, email) {
+  payload.email = email;
+
+  if(payload.email_verified) {
+    console.log(`${email} email already verified`);
+    return;
+  }
+
+  payload.status = randomString();
+  console.log("published new user", email);
   // await events.publish('user.joined', payload);
   // await events.publish('user.checkForVerificationWarning', { after: '24 hours' }, payload);
   // await events.publish('user.checkForVerification', { after: '48 hours' }, { email });
@@ -88,36 +164,34 @@ function verify(req, res, next) {
 userEvents(data, events, params);
 
 passport.serializeUser((user, done) => {
-  done(null, user);
+  done(null, user.key);
 });
-passport.deserializeUser((obj, done) => {
-  done(null, obj);
+passport.deserializeUser(async (key, done) => {
+  done(null, await data.get(key));
 });
 
 async function authLocalUser(email, password, done) {
+  let errorMessage = `The username or password you provided is incorrect.`;
+
   if (!email || !password) {
-    let errorMessage = `Missing "email" or "password" properties.`;
+    errorMessage = `Missing "email" or "password" properties.`
     return done(errorMessage, false);
   }
 
-  const user = await data.get(`users:${email}`);
+  const user = await users.getOne({ email });
 
   if (!user) {
-    let errorMessage = `Sorry, we couldn't find an account associated with <b>${email}</b>. Please sign up to create an account.`;
-
     return done(errorMessage, false);
   }
 
   if(!user.hash) {
-    let errorMessage = `The email <b>${email}</b> is already associated with a Google account. Please log in using your Google account.`;
-
+    let errorMessage = `Incorrect login information. Please try again.`;
     return done(errorMessage, false);
   }
 
   const isCorrectPassword = await bcrypt.compare(password, user.hash);
 
   if (!isCorrectPassword) {
-    let errorMessage = `The password you provided is incorrect.`;
     return done(errorMessage, false);
   }
 
@@ -129,22 +203,27 @@ passport.use(
 );
 
 async function authGoogleUser(req, accessToken, refreshToken, profile, done) {
-  const { email } = JSON.parse(profile._raw),
-        user = { email, accessToken, refreshToken },
-        emailExists = await data.get(`users:${email}`);
-
-  if(!emailExists) {
-    user.status = randomString();
-    publishUserEvent(user, email);
-  }
-
-  await data.set(`users:${email}`, user);
 
   if(!isValidClientHost('.'+req.headers.host, domain)) {
     return done(new Error('Invalid hostname'));
   }
 
-  return done(null, user);
+  const userData = profile._json,
+        { email } = userData,
+        existingUser = await users.getOne({ email });
+
+  userData.accessToken = accessToken;
+
+  if(!existingUser) {
+    await createNewUser(email, userData);
+    const newUser = await users.getOne({ email });
+
+    return done(null, newUser);
+  }
+  
+  await data.set(existingUser.key, userData);
+
+  return done(null, existingUser);
 }
 
 passport.use(
@@ -207,18 +286,17 @@ api.post("/signup/native", async (req, res) => {
   }
   
   async function hashPassword(password) {
-    const salt = await bcrypt.genSalt(10);
+    const salt = await bcrypt.genSalt(12);
     return await bcrypt.hash(password, salt);
   }
 
   const hash = await hashPassword(password);
-  const status = randomString();
-  const user = { email, hash, status };
+  
+  await createNewUser(email, { hash });
 
-  await data.set(`users:${email}`, user);
-  publishUserEvent(user, email);
+  const newUser = await users.getOne({ email });
 
-  loginUser(req, res, user);
+  loginUser(req, res, newUser);
 });
 
 api.get('/logout', verify, function(req, res) {

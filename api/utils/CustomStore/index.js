@@ -9,41 +9,32 @@ export default function(connect) {
         constructor() {
             super()
         }
-        async get(sessionId, callback) {
-            let session = await data.get(`sessions:${sessionId}`);
 
+        async get(sid, callback) {
+            const session = await data.get(`sessions:${sid}`);
+        
             if (!session) {
+              return callback(null, null);
+            }
+        
+            const sess = JSON.parse(session),
+                cookie = sess ? sess.cookie : null;
+        
+            if (cookie && cookie.expires) {
+                cookie.expires = new Date(cookie.expires);
+            }
+            
+            const now = new Date();
+            console.log(cookie.expires, now);
+            
+            if (cookie.expires < now) {
+                await this.destroy(sid);
                 return callback(null, null);
             }
+        
+            return callback(null, sess);
+        }
 
-            callback(null, JSON.parse(session));
-        }
-        async all(callback) {
-            // Retrieve all sessions from the database
-            const sessions = "database.getAll()";
-
-            // Call the callback function with the sessions data
-            callback(null, sessions);
-        }
-        async destroy(sessionId, next) {
-            try {
-                const id = `sessions:${sessionId}`;
-
-                const result = await data.remove(id);
-                next(null, result);
-            } catch (err) {
-                next(err);
-            }
-        }
-        async clear(callback) {
-            try {
-                console.log("clear");
-                // const result = await data.remove(`sessions`);
-                callback(null, "result");
-            } catch (err) {
-                callback(err);
-            }
-        }
         async set(sessionId, session, next) {
             try {
                 const id = `sessions:${sessionId}`;
@@ -55,6 +46,39 @@ export default function(connect) {
                 next(err);
             }
         }
+
+        async destroy(sessionId, next) {
+            console.log("destroy::", sessionId)
+            try {
+                const result = await data.remove(`sessions:${sessionId}`);
+
+                if (typeof next == "function") next(null, result);
+            } catch (err) {
+                console.log(err);
+                if(typeof next == "function") next(err);
+            }
+        }
+
+        // async touch(sid, sess, callback) {
+        //     const maxAge = sess.cookie.maxAge;
+        //     const now = new Date().getTime();
+        //     const expires = now + maxAge;
+        
+        //     console.log("touch::", {
+        //         maxAge,
+        //         now, 
+        //         expires,
+        //         sid, sess
+        //     });
+
+        //     if(typeof callback == "function") {
+        //         return callback(null, sess);
+        //     }
+
+        //     // const data = JSON.stringify(sess);
+        //     // await data.set(`sessions:${sid}`, data, 'EX', Math.round(ttl / 1000));
+        // }
+
     }
 
     return CustomStore;
