@@ -118,11 +118,14 @@ async function createNewUser(email, value) {
   const _id = buildId(),
         key = `users:${_id}`;
 
+  if(!value.email_verified) {
+    value.email_verified = randomString();
+  }
+
   publishUserEvent(value, email);
   await data.set(key, value, { label1: email });
-  value.key = key;
-
-  return value;
+  
+  return { key, ...value};
 }
 
 function loginUser(req, res, user) {
@@ -138,13 +141,12 @@ function loginUser(req, res, user) {
 async function publishUserEvent(payload, email) {
   payload.email = email;
 
-  if(payload.email_verified) {
-    console.log(`${email} email already verified`);
+  if(payload.email_verified === true) {
+    console.log(`Email '${email}' is already verified`);
     return;
   }
-
-  payload.status = randomString();
-  console.log("published new user", email);
+  
+  console.log(`Published new user '${email}'.`);
   // await events.publish('user.joined', payload);
   // await events.publish('user.checkForVerificationWarning', { after: '24 hours' }, payload);
   // await events.publish('user.checkForVerification', { after: '48 hours' }, { email });
