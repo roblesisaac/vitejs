@@ -174,7 +174,7 @@ passport.deserializeUser(async (key, done) => {
 });
 
 async function authLocalUser(email, password, done) {
-  let errorMessage = `The username or password you provided is incorrect.`;
+  const errorMessage = `The username or password you provided is incorrect.`;
 
   if (!email || !password) {
     return done(`Missing "email" or "password" properties.`, false);
