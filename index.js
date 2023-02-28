@@ -177,8 +177,7 @@ async function authLocalUser(email, password, done) {
   let errorMessage = `The username or password you provided is incorrect.`;
 
   if (!email || !password) {
-    errorMessage = `Missing "email" or "password" properties.`
-    return done(errorMessage, false);
+    return done(`Missing "email" or "password" properties.`, false);
   }
 
   const user = await users.getOne({ email });
@@ -188,8 +187,7 @@ async function authLocalUser(email, password, done) {
   }
 
   if(!user.hash) {
-    let errorMessage = `Incorrect login information. Please try again.`;
-    return done(errorMessage, false);
+    return done(`Incorrect login information. Please try again.`, false);
   }
 
   const isCorrectPassword = await bcrypt.compare(password, user.hash);
