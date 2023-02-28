@@ -45,7 +45,6 @@ const CustomStore = function(connect) {
 
       async set(sessionId, session, next) {
           try {
-            console.log({ session })
               const id = `sessions:${sessionId}`;
               const payload = JSON.stringify(session);
 
