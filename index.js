@@ -122,8 +122,8 @@ async function createNewUser(email, value) {
     value.email_verified = randomString();
   }
 
-  publishUserEvent(value, email);
   await data.set(key, value, { label1: email });
+  publishUserEvent(value, email);
   
   return { key, ...value};
 }
