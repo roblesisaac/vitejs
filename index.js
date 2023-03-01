@@ -91,7 +91,7 @@ api.use(session({
   genid: req => req.sessionID,
   secret: SESSION_ID,
   resave: false,
-  saveUninitialized: false,
+  saveUninitialized: true,
   store: new (CustomStore(session))(),
   cookie: {
     secure: true,
@@ -145,8 +145,8 @@ function loginUser(req, res, user) {
   });
 }
 
-async function publishUserEvent(payload, email) {
-  payload.email = email;
+async function publishUserEvent(data, email) {
+  const payload = { ...data, email };
 
   if(payload.email_verified === true) {
     console.log(`Email '${email}' is already verified`);
@@ -187,7 +187,7 @@ async function authLocalUser(email, password, done) {
     return done(`Missing "email" or "password" properties.`, false);
   }
 
-  const user = await users.getOne({ email });
+  const user = await users.get({ email });
 
   if (!user) {
     return done(errorMessage, false);
@@ -218,7 +218,7 @@ async function authGoogleUser(req, accessToken, refreshToken, profile, done) {
 
   const userData = profile._json,
         { email } = userData,
-        existingUser = await users.getOne({ email });
+        existingUser = await users.get({ email });
 
   userData.accessToken = accessToken;
 
@@ -250,8 +250,6 @@ api.post('/login/native', (req, res, next) => {
   InitLocal(req, res, next);
 });
 
-
-
 api.get(
   '/login/auth/google',
   passport.authenticate('google', { scope: ['email'] })
@@ -277,7 +275,7 @@ api.post("/signup/native", async (req, res) => {
       .json(`Email: "${ email }" is invalid. Please enter a valid email address.`);
   }
 
-  const emailExists = await data.get(`users:${email}`);
+  const emailExists = await users.get({ email });
 
   if (emailExists) {
     return res.status(400).json(`Email ${email} already exists.`);

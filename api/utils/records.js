@@ -6,17 +6,22 @@ export default function(collectionName) {
     }[collectionName];
 
     return {
-        getOne: async (filter) => {
+        get: async (filter) => {
             const readableName = Object.keys(filter)[0];
             const labelNumber = collection[readableName];
             const labelValue = filter[readableName];
 
             const { items } = await data.getByLabel(labelNumber, labelValue);
-            const item = items[0];
 
-            if(!item || !item.value) {
+            if (!items.length) {
                 return null;
             }
+
+            if (items.length > 1) {
+                return items;
+            }
+
+            const item = items[0];
 
             const { value } = item;
 
