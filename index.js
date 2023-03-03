@@ -12,7 +12,7 @@ import db from './api/db';
 import records from './api/utils/records';
 import { buildId, isValidEmail, randomString } from './src/utils';
 import userEvents from './api/events/userEvents.js';
-import { decrypt, decodeJWT } from "./api/utils/helpers";
+import { decrypt, decodeJWT } from './api/utils/helpers';
 
 const CustomStore = function(connect) {
   const Store = connect.Store || connect.sessionStore;
@@ -62,10 +62,10 @@ const CustomStore = function(connect) {
           try {
               const result = await data.remove(`sessions:${sessionId}`);
 
-              if (typeof next == "function") next(null, result);
+              if (typeof next == 'function') next(null, result);
           } catch (err) {
               console.log(err);
-              if(typeof next == "function") next(err);
+              if(typeof next == 'function') next(err);
           }
       }
 
@@ -81,7 +81,7 @@ const {
 
 const hostName = CLOUD_URL.replace('https://', '');
 const domain = '.'+hostName;
-const users = records("users");
+const users = records('users');
 
 const GoogleConfig = {
   clientID: GOOGLE_ID,
@@ -144,7 +144,7 @@ function loginUser(req, res, user) {
       return res.status(400).json(err); 
     }
     
-    return res.json("Success");
+    return res.json('Success');
   });
 }
 
@@ -158,8 +158,8 @@ async function publishUserEvent(data, email) {
   
   console.log(`Published new user '${email}'.`);
   await events.publish('user.joined', payload);
-  // await events.publish('user.checkForVerificationWarning', { after: '24 hours' }, payload);
-  // await events.publish('user.checkForVerification', { after: '48 hours' }, { email });
+  await events.publish('user.checkForVerificationWarning', { after: '24 hours' }, payload);
+  await events.publish('user.checkForVerification', { after: '48 hours' }, { email });
 }
 
 function isValidClientHost(clientHost, validHost) {
@@ -187,7 +187,7 @@ async function authLocalUser(email, password, done) {
   const errorMessage = `The username or password you provided is incorrect.`;
 
   if (!email || !password) {
-    return done(`Missing "email" or "password" properties.`, false);
+    return done(`Missing 'email' or 'password' properties.`, false);
   }
 
   const user = await users.get({ email });
@@ -242,7 +242,7 @@ passport.use(
 
 api.post('/login/native', (req, res, next) => {
   const callback = (err, user) => {
-    if (err) { 
+    if (err) {
       return res.status(400).json(err); 
     }
   
@@ -263,19 +263,19 @@ api.get(
   passport.authenticate('google', { successRedirect: '/', failureRedirect: '/login' })
 );
 
-api.post("/signup/native", async (req, res) => {
+api.post('/signup/native', async (req, res) => {
   const { email, password } = req.body;
 
   if (!email || !password) {
     return res
       .status(400)
-      .json(`Missing "email" or "password" properties.`);
+      .json(`Missing 'email' or 'password' properties.`);
   }
 
   if(!isValidEmail(email)) {
     return res
       .status(400)
-      .json(`Email: "${ email }" is invalid. Please enter a valid email address.`);
+      .json(`Email: '${ email }' is invalid. Please enter a valid email address.`);
   }
 
   const emailExists = await users.get({ email });
@@ -299,7 +299,7 @@ api.post("/signup/native", async (req, res) => {
   loginUser(req, res, newUser);
 });
 
-api.get("/signup/verify/:encrypted", async (req, res) => {
+api.get('/signup/verify/:encrypted', async (req, res) => {
   const { encrypted } = req.params;
 
   const decrypted = decrypt(encrypted);
@@ -309,7 +309,7 @@ api.get("/signup/verify/:encrypted", async (req, res) => {
   const user = await users.get({ email });
 
   if(!user) {
-    return res.send(`<h1>${ email } not found. Please, <a href="${CLOUD_URL}">Click Here</a> to sign up.</h1>`);
+    return res.send(`<h1>${ email } not found. Please, <a href='${CLOUD_URL}'>Click Here</a> to sign up.</h1>`);
   }
 
   // check if user.status is equal to the random string assigned at signup
@@ -319,7 +319,7 @@ api.get("/signup/verify/:encrypted", async (req, res) => {
   }
 
   if(user.email_verified) {
-    return res.redirect("/");
+    return res.redirect('/');
   }
 
   res.send(`<h1>Your ${ email } was found but your verification failed.</h1>`);
@@ -334,7 +334,7 @@ api.get('/logout', verify, function(req, res) {
   });
 });
 
-//dbs
+//dbsk
 const endpoint = '/:component/db/';
 api.get(endpoint, verify, (req, res) => db.find(req, res));
 api.get(endpoint+':id', (req, res) => db.findOne(req, res));
