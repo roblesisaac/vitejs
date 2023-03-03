@@ -3,8 +3,6 @@ import crypto from "crypto";
 import jwt from "jsonwebtoken";
 
 const { 
-    APP_NAME,
-    CLOUD_URL,
     CRYPT_KEY,
     CRYPT_IV,
     RSA_PRIVATE,
@@ -18,7 +16,10 @@ const RSA = {
 
 const ENCRYPT_KEY = JSON.parse(CRYPT_KEY);
 const ENCRYPT_IV = JSON.parse(CRYPT_IV);
-const hostName = CLOUD_URL.replace("https://", "");
+
+export function decodeJWT(token) {
+    return jwt.verify(token, RSA.PUBLIC, { algorithm: "RS256" });
+}
 
 export function decrypt(encrypted) {
     let encryptedText = Buffer.from(encrypted, "hex");

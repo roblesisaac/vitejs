@@ -12,6 +12,7 @@ import db from './api/db';
 import records from './api/utils/records';
 import { buildId, isValidEmail, randomString } from './src/utils';
 import userEvents from './api/events/userEvents.js';
+import { decrypt, decodeJWT } from "./api/utils/helpers";
 
 const CustomStore = function(connect) {
   const Store = connect.Store || connect.sessionStore;
@@ -47,8 +48,10 @@ const CustomStore = function(connect) {
           try {
               const id = `sessions:${sessionId}`;
               const payload = JSON.stringify(session);
+              const maxAge = session.cookie.originalMaxAge;
+              const ttl = (maxAge || 0) / 1000;
 
-              const result = await data.set(id, payload, { ttl: 10 });
+              const result = await data.set(id, payload, { ttl });
               next(null, result);
           } catch (err) {
               next(err);
@@ -98,7 +101,7 @@ api.use(session({
     httpOnly: true,
     sameSite: 'strict',
     domain,
-    maxAge: 10*1000, //(60*60) * 1000,
+    maxAge: (60*60) * 1000,
     signed: true
   }
 }));
@@ -154,7 +157,7 @@ async function publishUserEvent(data, email) {
   }
   
   console.log(`Published new user '${email}'.`);
-  // await events.publish('user.joined', payload);
+  await events.publish('user.joined', payload);
   // await events.publish('user.checkForVerificationWarning', { after: '24 hours' }, payload);
   // await events.publish('user.checkForVerification', { after: '48 hours' }, { email });
 }
@@ -294,6 +297,32 @@ api.post("/signup/native", async (req, res) => {
   const newUser = await createNewUser(email, { hash });
 
   loginUser(req, res, newUser);
+});
+
+api.get("/signup/verify/:encrypted", async (req, res) => {
+  const { encrypted } = req.params;
+
+  const decrypted = decrypt(encrypted);
+  const decoded = decodeJWT(decrypted);
+  const { email, status } = decoded.payload;
+
+  const user = await users.get({ email });
+
+  if(!user) {
+    return res.send(`<h1>${ email } not found. Please, <a href="${CLOUD_URL}">Click Here</a> to sign up.</h1>`);
+  }
+
+  // check if user.status is equal to the random string assigned at signup
+  if(user.status === status) {
+    user.email_verified = true;
+    await data.set(user.key, user);
+  }
+
+  if(user.email_verified) {
+    return res.redirect("/");
+  }
+
+  res.send(`<h1>Your ${ email } was found but your verification failed.</h1>`);
 });
 
 api.get('/logout', verify, function(req, res) {

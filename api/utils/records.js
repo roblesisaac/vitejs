@@ -32,5 +32,3 @@ export default function(collectionName) {
         }
     }
 }
-
-// await records("users").get({ email });
