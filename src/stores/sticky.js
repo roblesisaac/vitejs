@@ -21,6 +21,7 @@ const sticker = new Aid({
             window.removeEventListener('scroll', handleScroll);
             registered.splice(rIndex, 1);
 
+            // destick if needed
             const sIndex = stuck.findIndex(obj => obj.selector === selector);
 
             if(sIndex < 0) return;
@@ -146,8 +147,7 @@ const sticker = new Aid({
                 every: sid,
                 run: "deregister"
             }
-        ],
-        unstickAll: "resetDefaults"
+        ]
     }
 });
 
