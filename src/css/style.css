@@ -13,7 +13,6 @@
 }
 
 #app {
-  padding-top: 60px;
   text-align: center;
 }
 
@@ -107,6 +106,10 @@ legend {
   font-weight: bold;
   margin-bottom: 10px;
   display: inline-block;
+}
+
+nav a:before {
+  content: '​';
 }
 
 @media (prefers-color-scheme: light) {

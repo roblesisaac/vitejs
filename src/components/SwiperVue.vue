@@ -18,27 +18,12 @@
   </swiper>
 </template>
 
-<script>
-// Import Swiper Vue.js components
+<script setup>
 import { Swiper, SwiperSlide } from "swiper/vue";
-
-// Import Swiper styles
 import "swiper/css";
-
-// import required modules
 import { Autoplay } from "swiper";
 
-export default {
-  components: {
-    Swiper,
-    SwiperSlide,
-  },
-  setup() {
-    return {
-      modules: [Autoplay],
-    };
-  },
-};
+const modules = [Autoplay];
 </script>
 
 <style>

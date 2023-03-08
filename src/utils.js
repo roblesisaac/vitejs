@@ -54,18 +54,20 @@ export function buildId(timestamp) {
 const api = new Aid({
     steps: {
         handler: function(method, url, body) {
-            let payload = {
+            const payload = {
                 method,
                 headers: {
                   "Content-Type": "application/json"
                 }
             };
 
+            const { onError } = this;
+
             if(body) payload.body = JSON.stringify(body);
 
             fetch(url, payload)
                 .then(res => res.json())
-                .then(this.next);
+                .then(this.next).catch(onError);
         }
     },
     instruct: {

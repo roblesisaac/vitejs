@@ -1,5 +1,6 @@
 import { createApp } from "vue";
 import { createRouter, createWebHistory } from "vue-router";
+import { createPinia } from 'pinia';
 import App from "./App.vue";
 
 import HelloWorld from "./views/HelloWorld.vue";
@@ -24,6 +25,8 @@ const router = createRouter({
     ]
 });
 
-createApp(App)
-.use(router)
-.mount("#app");
+const pinia = createPinia();
+
+const app = createApp(App)
+    .use(router).use(pinia)
+    .mount("#app");

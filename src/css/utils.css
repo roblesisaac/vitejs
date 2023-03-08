@@ -363,6 +363,10 @@
     text-transform: capitalize;
 }
 
+.proper::first-letter {
+    text-transform: uppercase;
+}
+
 .r1 {
     border-radius: 1px;
 }

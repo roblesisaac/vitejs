@@ -2,12 +2,13 @@
   <div class="hello">
     <h1>Aloha</h1>
     <p>
-      <img alt="Vue logo" src="../assets/icon.svg" height="100" />
+      <img alt="Vue logo" id="van" src="../assets/icon.svg" height="100" />
     </p>
+    <p><b>Stuck Elems Height: {{  sticker.heightOfElemsStuck  }}</b></p>
     <p>
       The information below is being fetched from your Serverless Cloud API:
     </p>
-    <button @click="addUser">Add A User</button>
+    <button id="addUser" @click="addUser">Add A User</button>
     <div v-if="loading">Loading users...</div>
     <div v-else-if="users.length == 0"><strong>No users found</strong></div>
     <div v-else-if="users.message">{{  users.message }}</div>
@@ -29,43 +30,42 @@
   </div>
 </template>
 
-<script>
-import { ref } from "vue";
+<script setup>
+import { ref, onMounted, onUnmounted } from 'vue';
+import { api } from '../utils';
 
-export default {
-  name: "HelloWorld",
-  // props: {
-  //   msg: String,
-  // },
-  setup() {
-    const loading = ref(true);
-    const users = ref([]);
+import { useStickyStore } from '../stores/sticky';
+const { sticker } = useStickyStore();
 
-    return {
-      loading,
-      users,
-    };
-  },
-  created() {
-    fetch("/users/db")
-      .then(res => res.json()).then((response) => {
-        this.users = response;
-        this.loading = false;
-      })
-      .catch((error) => {
-        console.log(error);
-        this.loading = false;
-      });
-  },
-  methods: {
-    addUser() {
-      this.users.push({ 
-        name: "joe"+this.users.length,
-        status: "active" 
-       });
-    }
-  }
-};
+const loading = ref(true);
+const users = ref([]);
+const stickys = ['#van', '#addUser'];
+
+onMounted(async () => {
+  sticker.stickify(stickys);
+
+  await api.get('/users/db').then(response => {
+    users.value = response;
+    loading.value = false;
+  }).catch(e => loading.value=false);
+});
+
+onUnmounted(() => {
+  sticker.unstick(stickys);
+});
+
+function addUser() {
+  const anotherUser = {
+    name: 'joe'+users.value.length,
+    status: "active" 
+  };
+
+  let usrs = [];
+
+  for(var i=0; i<=10; i++) usrs.push(anotherUser)
+
+  users.value = users.value.concat(usrs);
+}
 </script>
 
 <style scoped>

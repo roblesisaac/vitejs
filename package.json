@@ -26,6 +26,7 @@
     "passport": "^0.6.0",
     "passport-google-oauth20": "^2.0.0",
     "passport-local": "^1.0.0",
+    "pinia": "^2.0.32",
     "swiper": "^8.4.6",
     "tls-check": "^1.0.0",
     "uuid": "^9.0.0",
