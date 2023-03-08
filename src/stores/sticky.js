@@ -10,19 +10,23 @@ const sticker = new Aid({
     },
     steps: {
         deregister() {
-            const { item: selector, registered } = this;
+            const { item: selector, registered, stuck } = this;
 
-            const index = registered.findIndex(obj => obj.selector === selector);
+            const rIndex = registered.findIndex(obj => obj.selector === selector);
             
-            if(index < 0) {
-                return;
-            }
+            if(rIndex < 0) return;
 
-            const { el, handleScroll } = registered[index];
+            const { handleScroll, elHeight } = registered[rIndex];
 
-            el.style.position = 'static'
             window.removeEventListener('scroll', handleScroll);
-            registered.splice(index, 1);
+            registered.splice(rIndex, 1);
+
+            const sIndex = stuck.findIndex(obj => obj.selector === selector);
+
+            if(sIndex < 0) return;
+
+            this.heightOfElemsStuck -= elHeight;
+            stuck.splice(sIndex, 1);
         },
         findElement() {
             const { selector, learn } = this;
@@ -35,16 +39,17 @@ const sticker = new Aid({
             const { next, el, stuck, selector } = this;
 
             const bounder = () => el.getBoundingClientRect();
+            const elHeight = bounder().height;
             
             const buildPlaceHolder = () => {
                 const elem = document.createElement('div');            
-                elem.style.height = `${bounder().height}px`;
+                elem.style.height = `${elHeight}px`;
                 elem.style.visibility = 'hidden';
                 return elem;
             }
 
             const placeholder = buildPlaceHolder();
-            const initialElStyle = el.style;
+            const initialStyle = el.style;
             let isSticky = false;
 
             const makeSticky = () => {
@@ -62,25 +67,23 @@ const sticker = new Aid({
                     zIndex: 100 + stuck.length + 1
                 };                                  
 
-                Object.assign(initialElStyle, stickyStyle);
+                Object.assign(initialStyle, stickyStyle);
                 el.parentNode.insertBefore(placeholder, el.nextSibling);
                 stuck.push({ el, selector });
-                this.heightOfElemsStuck += bounder().height;
+                this.heightOfElemsStuck += elHeight;
             };
 
             const makeUnSticky = () => {
                 if(!isSticky) {
                     return;
                 }
-                
-                isSticky = false;
-                this.heightOfElemsStuck -= bounder().height;
 
                 const index = stuck.findIndex(item =>  item.selector === selector);
-
                 if(index < 0) return;
-
-                el.style = initialElStyle;
+                
+                isSticky = false;
+                this.heightOfElemsStuck -= elHeight;
+                el.style = initialStyle;
                 stuck.splice(index, 1);
                 
                 if (el.nextSibling === placeholder) {
@@ -88,7 +91,7 @@ const sticker = new Aid({
                 }
             };
 
-            const handler = () => {
+            const handleScroll = () => {
                 const pageY = window.pageYOffset;
                 const elY = el.offsetTop;
 
@@ -99,7 +102,7 @@ const sticker = new Aid({
                 atZero() ? makeSticky() : makeUnSticky();
             };
 
-            next(handler);
+            next({ handleScroll, elHeight });
         },
         notRegisteredYet() {
             const { selector, registered, next } = this;
@@ -107,11 +110,15 @@ const sticker = new Aid({
 
             next(index === -1);
         },
-        registerElement(handleScroll) {
+        registerElement({ handleScroll, elHeight }) {
             const { selector, el, registered } = this;
 
             window.addEventListener('scroll', handleScroll);
-            registered.push({ el, selector, handleScroll });
+            registered.push({ 
+                selector, 
+                handleScroll,
+                elHeight 
+            });
         }
     },
     instruct: {
@@ -139,7 +146,8 @@ const sticker = new Aid({
                 every: sid,
                 run: "deregister"
             }
-        ]
+        ],
+        unstickAll: "resetDefaults"
     }
 });
 

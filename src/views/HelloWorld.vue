@@ -62,7 +62,7 @@ function addUser() {
 
   let usrs = [];
 
-  for(var i=0; i<=10; i++) usrs.push(anotherUser)
+  for(var i=0; i<=100; i++) usrs.push(anotherUser)
 
   users.value = users.value.concat(usrs);
 }
