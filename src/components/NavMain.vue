@@ -1,7 +1,7 @@
 <template>
 <nav class="grid topNav bgF1 shadow">
     <div class="cell-1-3 text-left bold">
-        <img src="../assets/icon.svg" height="30" />
+        <img id="logo" src="../assets/icon.svg" height="30" />
     </div>
     <div class="cell-2-3 text-right">
         <router-link 
@@ -22,7 +22,7 @@ import { useStickyStore } from '../stores/sticky';
 const { sticker } = useStickyStore();
 
 onMounted(() => {
-    sticker.stickify('.topNav');
+    sticker.stickify('#logo');
 });
 
 const userViews = ref([

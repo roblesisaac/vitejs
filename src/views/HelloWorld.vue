@@ -44,6 +44,8 @@ const stickys = ['#van', '#addUser'];
 onMounted(async () => {
   sticker.stickify(stickys);
 
+  console.log(sticker);
+
   await api.get('/users/db').then(response => {
     users.value = response;
     loading.value = false;

@@ -2,123 +2,94 @@
 // import { convert } from '../../api/utils/aidkit';
 
 // export const useStickyStore = defineStore('sticker', () => {
-//     const registered = [];
-//     const stuck = [];
-//     let heightOfElemsStuck = 0;
-
-//     function initScrollHandler(selector) {
-//         const index = registered.findIndex(obj => obj.selector === selector);
-
-//         if(index > -1) {
-//             return;
-//         }
-
-//         const el = document.querySelector(selector);
-//         const bounder = () => el.getBoundingClientRect();
-            
-//         const buildPlaceHolder = () => {
-//             const elem = document.createElement('div');            
-//             elem.style.height = `${bounder().height}px`;
-//             elem.style.visibility = 'hidden';
-//             return elem;
-//         }
-
-//         const placeholder = buildPlaceHolder();
-//         const initialElStyle = el.style;
-//         let isSticky = false;
-
-//         const makeSticky = () => {
-//             if(isSticky) {
-//                 return;
+//     let breakingPoint = 0;
+//     let isSticky = false;
+    
+//     function addFixedClass(element, breakingPoint, isSticky) {
+//         const bounder = () => element.getBoundingClientRect();
+//         const elementHeight = bounder().height;
+//         const elementTop = bounder().top;
+//         const currentPosition = elementTop - breakingPoint;
+//         const initialStyle = element.style;
+    
+//         console.log({ elementTop, elementHeight, currentPosition, breakingPoint })
+    
+//         if (currentPosition <= 0) {
+//             // Element is above or at the breaking point, fix it
+//             if (isSticky) {
+//                 return [breakingPoint, isSticky];
 //             }
-
-//             isSticky = true;
-
 //             const stickyStyle = {
 //                 position: 'fixed',
-//                 top: `${heightOfElemsStuck}px`,
+//                 top: `${breakingPoint}px`,
 //                 left: `${bounder().left}px`,
 //                 width: `${bounder().width}px`,
-//                 zIndex: 100 + stuck.length + 1,
-//             };                                
-
-//             Object.assign(initialElStyle, stickyStyle);
-//             el.parentNode.insertBefore(placeholder, el.nextSibling);
-//             stuck.push({ el, selector });
-//             heightOfElemsStuck += bounder().height;
-//         };
-
-//         const makeUnSticky = () => {
-//             if(!isSticky) {
-//                 return;
+//                 // zIndex: 100 + stuck.length + 1
+//             };
+    
+//             Object.assign(initialStyle, stickyStyle);
+//             breakingPoint += elementHeight;
+//             isSticky = true;
+//         } else {
+//             // Element is below the breaking point, unfix it
+//             if (!isSticky) {
+//                 return [breakingPoint, isSticky];
 //             }
-            
+//             element.style.position = initialStyle.position;
+//             element.style.top = initialStyle.top;
+//             element.style.left = initialStyle.left;
+//             element.style.width = initialStyle.width;
+//             breakingPoint -= elementHeight;
 //             isSticky = false;
-//             heightOfElemsStuck -= bounder().height;
-
-//             const index = stuck.findIndex(item =>  item.selector === selector);
-
-//             if(index < 0) {
-//                 return;
-//             }
-
-//             el.style = initialElStyle;
-//             stuck.splice(index, 1);
-            
-//             if (el.nextSibling === placeholder) {
-//                 el.parentNode.removeChild(placeholder);
+//         }
+    
+//         return [breakingPoint, isSticky];
+//     }
+    
+    
+//     const build = function() {
+//         const handlers = new Map();
+    
+//         const registerHandler = function(selector) {
+//             const element = document.querySelector(selector);
+//             const handler = function() {
+//                 const [newBreakingPoint, newIsSticky] = addFixedClass(
+//                     element,
+//                     breakingPoint,
+//                     isSticky
+//                 );
+//                 breakingPoint = newBreakingPoint;
+//                 isSticky = newIsSticky;
+//             };
+//             handlers.set(selector, handler);
+//             window.addEventListener('scroll', handler);
+//         };
+    
+//         const deregisterHandler = function(selector) {
+//             const handler = handlers.get(selector);
+//             if (handler) {
+//                 window.removeEventListener('scroll', handler);
+//                 handlers.delete(selector);
 //             }
 //         };
-
-//         const handleScroll = () => {
-//             const pageY = window.pageYOffset;
-//             const elY = el.offsetTop;
-
-//             const atZero = () => isSticky 
-//                 ? elY <= pageY 
-//                 : elY - heightOfElemsStuck <= pageY;          
-
-//             atZero() ? makeSticky() : makeUnSticky();
+    
+//         const stickify = function(selectors) {
+//             convert.toArray(selectors).forEach(registerHandler);
 //         };
-
-//         window.addEventListener('scroll', handleScroll);
-//         registered.push({ el, selector, handleScroll });
-//     }
-
-//     function unstickify(selector) {
-//         const index = registered.findIndex(obj => obj.selector === selector);
-
-//         if(index < 0) {
-//             return;
-//         }
-
-//         const { el, handleScroll } = registered[index];
-
-//         el.style.position = 'static';
-//         window.removeEventListener('scroll', handleScroll);
-//         registered.splice(index, 1);
-//     }
-
-//     function stickify(selectors) {
-//         if(!selectors) {
-//             return;
-//         }
-
-//         convert.toArray(selectors).forEach(initScrollHandler);
-//     }
-
-//     function unstick(selectors) {
-//         if(!selectors) {
-//             return;
-//         }
-
-//         convert.toArray(selectors).forEach(unstickify);
-//     }
-   
-//     const sticker = {
-//         stickify,
-//         unstick
+    
+//         const unstick = function(selectors) {
+//             convert.toArray(selectors).forEach(deregisterHandler);
+//         };
+    
+//         return {
+//             stickify,
+//             unstick,
+//         };
 //     };
-
-//     return  { sticker };
+    
+    
+//     const sticker = build()
+    
+//     return { sticker };
+    
 // });

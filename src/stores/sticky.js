@@ -6,7 +6,7 @@ const sticker = new Aid({
     state: {
         registered: [],
         stuck: [],
-        heightOfElemsStuck: 0
+        stickingPoint: 0
     },
     steps: {
         deregister() {
@@ -16,9 +16,10 @@ const sticker = new Aid({
             
             if(rIndex < 0) return;
 
-            const { handleScroll, elHeight } = registered[rIndex];
+            const { handleScroll, makeUnSticky, elHeight } = registered[rIndex];
 
             window.removeEventListener('scroll', handleScroll);
+            window.removeEventListener('resize', makeUnSticky);
             registered.splice(rIndex, 1);
 
             // destick if needed
@@ -26,7 +27,7 @@ const sticker = new Aid({
 
             if(sIndex < 0) return;
 
-            this.heightOfElemsStuck -= elHeight;
+            this.stickingPoint -= elHeight;
             stuck.splice(sIndex, 1);
         },
         findElement() {
@@ -62,7 +63,7 @@ const sticker = new Aid({
 
                 const stickyStyle = {
                     position: 'fixed',
-                    top: `${this.heightOfElemsStuck}px`,
+                    top: `${this.stickingPoint}px`,
                     left: `${bounder().left}px`,
                     width: `${bounder().width}px`,
                     zIndex: 100 + stuck.length + 1
@@ -70,8 +71,9 @@ const sticker = new Aid({
 
                 Object.assign(initialStyle, stickyStyle);
                 el.parentNode.insertBefore(placeholder, el.nextSibling);
+                el.breakingPoint = window.pageYOffset;
+                this.stickingPoint += elHeight;
                 stuck.push({ el, selector });
-                this.heightOfElemsStuck += elHeight;
             };
 
             const makeUnSticky = () => {
@@ -83,8 +85,9 @@ const sticker = new Aid({
                 if(index < 0) return;
                 
                 isSticky = false;
-                this.heightOfElemsStuck -= elHeight;
+                this.stickingPoint -= elHeight;
                 el.style = initialStyle;
+                delete el.breakingPoint;
                 stuck.splice(index, 1);
                 
                 if (el.nextSibling === placeholder) {
@@ -94,16 +97,17 @@ const sticker = new Aid({
 
             const handleScroll = () => {
                 const pageY = window.pageYOffset;
-                const elY = el.offsetTop;
 
-                const atZero = () => isSticky 
-                    ? elY <= pageY
-                    : elY-this.heightOfElemsStuck <= pageY;          
+                const isAtStickingPoint = () => isSticky 
+                    ? pageY >= el.breakingPoint
+                    : pageY+this.stickingPoint >= el.offsetTop
 
-                atZero() ? makeSticky() : makeUnSticky();
+                isAtStickingPoint()
+                    ? makeSticky()
+                    : makeUnSticky();
             };
 
-            next({ handleScroll, elHeight });
+            next({ handleScroll, makeUnSticky, elHeight });
         },
         notRegisteredYet() {
             const { selector, registered, next } = this;
@@ -111,15 +115,12 @@ const sticker = new Aid({
 
             next(index === -1);
         },
-        registerElement({ handleScroll, elHeight }) {
+        registerElement({ handleScroll, makeUnSticky, elHeight }) {
             const { selector, el, registered } = this;
 
             window.addEventListener('scroll', handleScroll);
-            registered.push({ 
-                selector, 
-                handleScroll,
-                elHeight 
-            });
+            window.addEventListener('resize', makeUnSticky);
+            registered.push({ selector, handleScroll, makeUnSticky, elHeight });
         }
     },
     instruct: {
