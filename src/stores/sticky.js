@@ -122,10 +122,12 @@ const sticker = new Aid({
             const handleScroll = () => {
                 if(!box) box = buildBox();
 
+                const { height, topPosition } = stuck[stickUnder] || {};
+
                 const stickingPoint = isSticky
                     ? stuck[selector].stickingPoint
                     : stuck[stickUnder]
-                    ? box.top - stuck[stickUnder].height - stuck[stickUnder].topPosition
+                    ? box.top - height - topPosition
                     : box.top - stuck.height;
 
                 window.pageYOffset > stickingPoint
