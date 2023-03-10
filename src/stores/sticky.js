@@ -1,34 +1,41 @@
 import { defineStore } from 'pinia';
 import { Aid } from '../../api/utils/aidkit';
-import { ref } from 'vue';
 
 const sticker = new Aid({
     state: {
         registered: [],
-        stuck: [],
-        stickingPoint: 0
+        stuck: 0,
+        screenSize: {
+            small: () => window.matchMedia("(max-width: 639px)").matches,
+            medium: () => window.matchMedia("(min-width: 640px) and (max-width: 1023px)").matches,
+            large: () => window.matchMedia("(min-width: 1024px)").matches,
+        }          
     },
     steps: {
+        defineSelector() {
+            const { item, learn } = this;
+
+            let { selector, stickWith } = item;
+
+            if(!selector) selector = item;
+
+            learn({ selector, stickWith });
+        },
         deregister() {
-            const { item: selector, registered, stuck } = this;
+            const { item: selector, registered } = this;
 
-            const rIndex = registered.findIndex(obj => obj.selector === selector);
+            const index = registered.findIndex(obj => obj.selector === selector);
             
-            if(rIndex < 0) return;
+            if(index < 0) return;
 
-            const { handleScroll, makeUnSticky, elHeight } = registered[rIndex];
+            const { handlers } = registered[index];
 
-            window.removeEventListener('scroll', handleScroll);
-            window.removeEventListener('resize', makeUnSticky);
-            registered.splice(rIndex, 1);
-
-            // destick if needed
-            const sIndex = stuck.findIndex(obj => obj.selector === selector);
-
-            if(sIndex < 0) return;
-
-            this.stickingPoint -= elHeight;
-            stuck.splice(sIndex, 1);
+            for(let eventName in handlers) {
+                window.removeEventListener(eventName, handlers[eventName]);
+            }
+            
+            registered.splice(index, 1);
+            --this.stuck;
         },
         findElement() {
             const { selector, learn } = this;
@@ -38,11 +45,22 @@ const sticker = new Aid({
             learn({ el });
         },
         initScrollHandler() {
-            const { next, el, stuck, selector } = this;
+            const { next, el, registered, stickWith } = this;
 
             const bounder = () => el.getBoundingClientRect();
             const elHeight = bounder().height;
-            
+            const buddy = registered.find(item => item.selector === stickWith);
+
+            const calcPrevRegisteredHeight = () => {
+                let combinedHeight = 0;
+
+                registered.forEach(reg => combinedHeight += reg.elHeight);
+
+                return combinedHeight;
+            }
+
+            const prevRegisteredHeight = calcPrevRegisteredHeight();
+
             const buildPlaceHolder = () => {
                 const elem = document.createElement('div');            
                 elem.style.height = `${elHeight}px`;
@@ -50,6 +68,25 @@ const sticker = new Aid({
                 return elem;
             }
 
+            const calcStickyTopPosition = () => {
+                if(!buddy) {
+                    return prevRegisteredHeight;
+                }
+
+                return buddy.stickyTopPosition || prevRegisteredHeight;
+            }
+
+            const calcStickingPoint = () => {
+                if(!buddy) {
+                    return initialTop - prevRegisteredHeight
+                }
+
+                return initialTop - prevRegisteredHeight + buddy.elHeight;
+            }
+
+            const stickyTopPosition = calcStickyTopPosition();
+            const initialTop = el.offsetTop;
+            const stickingPoint = calcStickingPoint();
             const placeholder = buildPlaceHolder();
             const initialStyle = el.style;
             let isSticky = false;
@@ -63,32 +100,25 @@ const sticker = new Aid({
 
                 const stickyStyle = {
                     position: 'fixed',
-                    top: `${this.stickingPoint}px`,
+                    top: `${stickyTopPosition}px`,
                     left: `${bounder().left}px`,
                     width: `${bounder().width}px`,
-                    zIndex: 100 + stuck.length + 1
+                    zIndex: 100 + this.stuck
                 };                                  
 
                 Object.assign(initialStyle, stickyStyle);
                 el.parentNode.insertBefore(placeholder, el.nextSibling);
-                el.breakingPoint = window.pageYOffset;
-                this.stickingPoint += elHeight;
-                stuck.push({ el, selector });
+                this.stuck++
             };
 
             const makeUnSticky = () => {
                 if(!isSticky) {
                     return;
                 }
-
-                const index = stuck.findIndex(item =>  item.selector === selector);
-                if(index < 0) return;
                 
                 isSticky = false;
-                this.stickingPoint -= elHeight;
                 el.style = initialStyle;
-                delete el.breakingPoint;
-                stuck.splice(index, 1);
+                this.stuck--;
                 
                 if (el.nextSibling === placeholder) {
                     el.parentNode.removeChild(placeholder);
@@ -96,56 +126,57 @@ const sticker = new Aid({
             };
 
             const handleScroll = () => {
-                const pageY = window.pageYOffset;
-
-                const isAtStickingPoint = () => isSticky 
-                    ? pageY >= el.breakingPoint
-                    : pageY+this.stickingPoint >= el.offsetTop
-
-                isAtStickingPoint()
-                    ? makeSticky()
-                    : makeUnSticky();
+                window.pageYOffset >= stickingPoint
+                        ? makeSticky()
+                        : makeUnSticky();
             };
 
-            next({ handleScroll, makeUnSticky, elHeight });
+            const handlers = {
+                scroll: handleScroll,
+                resize: makeUnSticky
+            }
+
+            next({ handlers, elHeight, stickyTopPosition });
         },
-        notRegisteredYet() {
+        isAlreadyRegistered() {
             const { selector, registered, next } = this;
-            const index = registered.findIndex(obj => obj.selector === selector);
+            const registrar = registered.find(obj => obj.selector === selector);
 
-            next(index === -1);
+            next(!!registrar);
         },
-        registerElement({ handleScroll, makeUnSticky, elHeight }) {
-            const { selector, el, registered } = this;
+        registerElement({ handlers, elHeight, stickyTopPosition }) {
+            const { selector, registered } = this;
 
-            window.addEventListener('scroll', handleScroll);
-            window.addEventListener('resize', makeUnSticky);
-            registered.push({ selector, handleScroll, makeUnSticky, elHeight });
+            for (let eventName in handlers) {
+                window.addEventListener(eventName, handlers[eventName]);
+            }
+
+            registered.push({ selector, handlers, elHeight, stickyTopPosition });
         }
     },
     instruct: {
         _register: [
             {
-                if: "notRegisteredYet",
-                true: [
+                if: "isAlreadyRegistered",
+                false: [
                     "findElement",
                     "initScrollHandler",
                     "registerElement"
                 ] 
             }
         ],
-        stickify: (sid) => [
+        stickify: (stickys) => [
             {
-                every: sid,
-                run: [
-                    { selector: "item" },
+                every: stickys,
+                async: [
+                    "defineSelector",
                     "_register"
                 ]
             }
         ],
-        unstick: (sid) => [
+        unstick: (stickys) => [
             {
-                every: sid,
+                every: stickys,
                 run: "deregister"
             }
         ]

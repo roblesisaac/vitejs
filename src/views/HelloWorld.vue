@@ -1,32 +1,49 @@
 <template>
-  <div class="hello">
-    <h1>Aloha</h1>
-    <p>
-      <img alt="Vue logo" id="van" src="../assets/icon.svg" height="100" />
-    </p>
-    <p><b>Stuck Elems Height: {{  sticker.heightOfElemsStuck  }}</b></p>
-    <p>
-      The information below is being fetched from your Serverless Cloud API:
-    </p>
-    <button id="addUser" @click="addUser">Add A User</button>
-    <div v-if="loading">Loading users...</div>
-    <div v-else-if="users.length == 0"><strong>No users found</strong></div>
-    <div v-else-if="users.message">{{  users.message }}</div>
-    <div v-else id="users">
-      <div v-for="user in users" v-bind:key="user.id">
-        <strong>{{ user.name }}: </strong>
-        <span :class="user.status">{{ user.status }}</span>
+  <div class="grid">
+    <div class="cell-1-2">
+      <h1>Aloha</h1>
+      <p>
+        Open your terminal to the project directory and run <code>npm i</code> to
+        install the Vue.js dependencies. Then run <code>cloud dev</code> to launch
+        the local Vue.js dev server. You can access the API on your personal
+        developer sandbox by appending <code>/api</code> to the local dev server's
+        localhost address.
+      </p>
+      <p>
+        <img alt="Vue logo" id="van" src="../assets/icon.svg" height="100" />
+      </p>
+      <p>
+        The information below is being fetched from your Serverless Cloud API:
+      </p>
+      <button id="addUser" @click="addUser">Add A User</button>
+      <div v-if="loading">Loading users...</div>
+      <div v-else-if="users.length == 0"><strong>No users found</strong></div>
+      <div v-else-if="users.message">{{  users.message }}</div>
+      <div v-else id="users">
+        <div v-for="user in users" v-bind:key="user.id">
+          <strong>{{ user.name }}: </strong>
+          <span :class="user.status">{{ user.status }}</span>
+        </div>
       </div>
     </div>
-
-    <h3>Edit this Vue.js app:</h3>
-    <p>
-      Open your terminal to the project directory and run <code>npm i</code> to
-      install the Vue.js dependencies. Then run <code>cloud dev</code> to launch
-      the local Vue.js dev server. You can access the API on your personal
-      developer sandbox by appending <code>/api</code> to the local dev server's
-      localhost address.
-    </p>
+    <div class="cell-1-2">
+      <p>
+        Open your terminal to the project directory and run <code>npm i</code> to
+        install the Vue.js dependencies. Then run <code>cloud dev</code> to launch
+        the local Vue.js dev server. You can access the API on your personal
+        developer sandbox by appending <code>/api</code> to the local dev server's
+        localhost address.
+      </p>
+      <div id="header"><b>Header</b></div>
+      <h3>Edit this Vue.js app:</h3>
+      <p>
+        Open your terminal to the project directory and run <code>npm i</code> to
+        install the Vue.js dependencies. Then run <code>cloud dev</code> to launch
+        the local Vue.js dev server. You can access the API on your personal
+        developer sandbox by appending <code>/api</code> to the local dev server's
+        localhost address.
+      </p>
+    </div>
   </div>
 </template>
 
@@ -39,7 +56,14 @@ const { sticker } = useStickyStore();
 
 const loading = ref(true);
 const users = ref([]);
-const stickys = ['#van', '#addUser'];
+const stickys = [
+  '#header', 
+  { 
+    selector: '#van', 
+    stickWith: "#header" 
+  }, 
+  '#addUser'
+];
 
 onMounted(async () => {
   sticker.stickify(stickys);

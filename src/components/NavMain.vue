@@ -22,7 +22,7 @@ import { useStickyStore } from '../stores/sticky';
 const { sticker } = useStickyStore();
 
 onMounted(() => {
-    sticker.stickify('#logo');
+    sticker.stickify('.topNav');
 });
 
 const userViews = ref([
