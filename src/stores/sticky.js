@@ -120,15 +120,17 @@ const sticker = new Aid({
             }
 
             const handleScroll = () => {
-                if(!box) box = buildBox();
+                box = box || buildBox();
 
-                const { height, topPosition } = stuck[stickUnder] || {};
+                const Stuck = stuck[selector];
+                const StickUnder = stuck[stickUnder];
+                const Top = box.top;
 
-                const stickingPoint = isSticky
-                    ? stuck[selector].stickingPoint
-                    : stuck[stickUnder]
-                    ? box.top - height - topPosition
-                    : box.top - stuck.height;
+                const stickingPoint = Stuck
+                    ? Stuck.stickingPoint
+                    : StickUnder
+                    ? Top - StickUnder.height - StickUnder.topPosition
+                    : Top - stuck.height;
 
                 window.pageYOffset > stickingPoint
                         ? makeSticky(stickingPoint)
@@ -136,8 +138,8 @@ const sticker = new Aid({
             };
 
             const handlers = {
-                scroll: handleScroll,
-                resize: makeUnSticky
+                resize: makeUnSticky,
+                scroll: handleScroll
             }
 
             next({ handlers });
@@ -150,8 +152,8 @@ const sticker = new Aid({
         registerElement({ handlers }) {
             const { selector, registered } = this;
 
-            for (let eventName in handlers) {
-                window.addEventListener(eventName, handlers[eventName]);
+            for (let name in handlers) {
+                window.addEventListener(name, handlers[name], { passive: true });
             }
 
             registered[selector] = { handlers };
