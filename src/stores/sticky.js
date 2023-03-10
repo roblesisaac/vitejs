@@ -15,14 +15,15 @@ const sticker = new Aid({
         defineSelector() {
             const { item, learn } = this;
 
-            let { selector, stickWith } = item;
+            let { selector, stickUnder } = item;
 
-            if(!selector) selector = item;
-
-            learn({ selector, stickWith });
+            learn({ 
+                selector: selector || item, 
+                stickUnder 
+            });
         },
         deregister() {
-            const { item: selector, registered } = this;
+            const { selector, registered } = this;
 
             const index = registered.findIndex(obj => obj.selector === selector);
             
@@ -45,21 +46,27 @@ const sticker = new Aid({
             learn({ el });
         },
         initScrollHandler() {
-            const { next, el, registered, stickWith } = this;
+            const { next, el, registered, stickUnder } = this;
 
-            const bounder = () => el.getBoundingClientRect();
-            const elHeight = bounder().height;
-            const buddy = registered.find(item => item.selector === stickWith);
+            const box = () => el.getBoundingClientRect();
+            const elHeight = box().height;
+            const stickUnderIndex = registered.findIndex(item => item.selector === stickUnder);
 
-            const calcPrevRegisteredHeight = () => {
+            const calcPrevRegisteredHeight = (stopAt) => {
+                stopAt = stopAt < 0 ? registered.length : stopAt;
+
                 let combinedHeight = 0;
 
-                registered.forEach(reg => combinedHeight += reg.elHeight);
+                registered.forEach((reg, index) => {
+                    if(index <= stopAt) {
+                        combinedHeight += reg.elHeight
+                    }
+                });
 
                 return combinedHeight;
             }
 
-            const prevRegisteredHeight = calcPrevRegisteredHeight();
+            const prevRegisteredHeight = calcPrevRegisteredHeight(stickUnderIndex);
 
             const buildPlaceHolder = () => {
                 const elem = document.createElement('div');            
@@ -69,19 +76,11 @@ const sticker = new Aid({
             }
 
             const calcStickyTopPosition = () => {
-                if(!buddy) {
-                    return prevRegisteredHeight;
-                }
-
-                return buddy.stickyTopPosition || prevRegisteredHeight;
+                return prevRegisteredHeight;
             }
 
             const calcStickingPoint = () => {
-                if(!buddy) {
-                    return initialTop - prevRegisteredHeight
-                }
-
-                return initialTop - prevRegisteredHeight + buddy.elHeight;
+                return initialTop - prevRegisteredHeight
             }
 
             const stickyTopPosition = calcStickyTopPosition();
@@ -101,12 +100,12 @@ const sticker = new Aid({
                 const stickyStyle = {
                     position: 'fixed',
                     top: `${stickyTopPosition}px`,
-                    left: `${bounder().left}px`,
-                    width: `${bounder().width}px`,
+                    left: `${box().left}px`,
+                    width: `${box().width}px`,
                     zIndex: 100 + this.stuck
                 };                                  
 
-                Object.assign(initialStyle, stickyStyle);
+                Object.assign(el.style, stickyStyle);
                 el.parentNode.insertBefore(placeholder, el.nextSibling);
                 this.stuck++
             };
@@ -140,9 +139,9 @@ const sticker = new Aid({
         },
         isAlreadyRegistered() {
             const { selector, registered, next } = this;
-            const registrar = registered.find(obj => obj.selector === selector);
+            const item = registered.find(obj => obj.selector === selector);
 
-            next(!!registrar);
+            next(!!item);
         },
         registerElement({ handlers, elHeight, stickyTopPosition }) {
             const { selector, registered } = this;
@@ -177,7 +176,7 @@ const sticker = new Aid({
         unstick: (stickys) => [
             {
                 every: stickys,
-                run: "deregister"
+                run: ["defineSelector", "deregister"]
             }
         ]
     }
