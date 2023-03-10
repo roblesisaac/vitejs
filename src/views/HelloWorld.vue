@@ -108,16 +108,17 @@ const users = ref([]);
 const stickys = [
   '#header', 
   { 
-    selector: '#van', 
+    selector: '#van',
     stickUnder: '.topNav'
-  }, 
-  '#addUser'
+  },
+  {
+    selector: '#addUser',
+    stickUnder: '#van'
+  }
 ];
 
 onMounted(async () => {
   sticker.stickify(stickys);
-
-  console.log(sticker);
 
   await api.get('/users/db').then(response => {
     users.value = response;

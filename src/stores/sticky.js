@@ -3,8 +3,10 @@ import { Aid } from '../../api/utils/aidkit';
 
 const sticker = new Aid({
     state: {
-        registered: [],
-        stuck: 0,
+        registered: {},
+        stuck: {
+            height: 0
+        },
         screenSize: {
             small: () => window.matchMedia("(max-width: 639px)").matches,
             medium: () => window.matchMedia("(min-width: 640px) and (max-width: 1023px)").matches,
@@ -23,20 +25,22 @@ const sticker = new Aid({
             });
         },
         deregister() {
-            const { selector, registered } = this;
+            const { selector, registered, stuck } = this;
 
-            const index = registered.findIndex(obj => obj.selector === selector);
+            const item = registered[selector]
             
-            if(index < 0) return;
+            if(!item) return;
 
-            const { handlers } = registered[index];
+            const { handlers } = item;
 
             for(let eventName in handlers) {
-                window.removeEventListener(eventName, handlers[eventName]);
+                const method = handlers[eventName];
+
+                if(method.name === 'makeUnSticky') method();
+                window.removeEventListener(eventName, method);
             }
             
-            registered.splice(index, 1);
-            --this.stuck;
+            delete registered[selector];
         },
         findElement() {
             const { selector, learn } = this;
@@ -46,87 +50,86 @@ const sticker = new Aid({
             learn({ el });
         },
         initScrollHandler() {
-            const { next, el, registered, stickUnder } = this;
+            const { next, el, stuck, selector, stickUnder } = this;
 
-            const box = () => el.getBoundingClientRect();
-            const elHeight = box().height;
-            const stickUnderIndex = registered.findIndex(item => item.selector === stickUnder);
+            let box,
+                initialStyle = el.style,
+                isSticky = false;
 
-            const calcPrevRegisteredHeight = (stopAt) => {
-                stopAt = stopAt < 0 ? registered.length : stopAt;
+            const buildBox = () => {
+                const { height, left, width } = el.getBoundingClientRect();
+                const top = el.offsetTop;
+                const elem = document.createElement('div');
 
-                let combinedHeight = 0;
-
-                registered.forEach((reg, index) => {
-                    if(index <= stopAt) {
-                        combinedHeight += reg.elHeight
-                    }
-                });
-
-                return combinedHeight;
-            }
-
-            const prevRegisteredHeight = calcPrevRegisteredHeight(stickUnderIndex);
-
-            const buildPlaceHolder = () => {
-                const elem = document.createElement('div');            
-                elem.style.height = `${elHeight}px`;
+                elem.style.height = height+'px';
+                elem.style.width = width+'px';
                 elem.style.visibility = 'hidden';
-                return elem;
-            }
 
-            const calcStickyTopPosition = () => {
-                return prevRegisteredHeight;
-            }
+                return {
+                    top, 
+                    height,
+                    left, 
+                    width,
+                    placeholder: elem
+                }
+            };
 
-            const calcStickingPoint = () => {
-                return initialTop - prevRegisteredHeight
-            }
-
-            const stickyTopPosition = calcStickyTopPosition();
-            const initialTop = el.offsetTop;
-            const stickingPoint = calcStickingPoint();
-            const placeholder = buildPlaceHolder();
-            const initialStyle = el.style;
-            let isSticky = false;
-
-            const makeSticky = () => {
+            const makeSticky = (stickingPoint) => {
                 if(isSticky) {
                     return;
                 }
 
                 isSticky = true;
 
+                const { top, left, height, width, placeholder } = box;
+
+                const topPosition = top-stickingPoint;
+
                 const stickyStyle = {
                     position: 'fixed',
-                    top: `${stickyTopPosition}px`,
-                    left: `${box().left}px`,
-                    width: `${box().width}px`,
-                    zIndex: 100 + this.stuck
-                };                                  
+                    top: topPosition+'px',
+                    left: left+'px',
+                    width: width+'px',
+                    zIndex: 100 + stuck.height
+                };
 
                 Object.assign(el.style, stickyStyle);
                 el.parentNode.insertBefore(placeholder, el.nextSibling);
-                this.stuck++
+
+                stuck[selector] = { height, stickingPoint, topPosition };
+
+                stuck.height += height;
             };
 
             const makeUnSticky = () => {
-                if(!isSticky) {
-                    return;
-                }
-                
-                isSticky = false;
+                const { height, placeholder } = box;
                 el.style = initialStyle;
-                this.stuck--;
-                
+                box = buildBox();
+
+                if(!isSticky) {
+                    return
+                }
+
+                isSticky = false;
+                stuck.height -= height;
+                delete stuck[selector];
+
                 if (el.nextSibling === placeholder) {
                     el.parentNode.removeChild(placeholder);
                 }
-            };
+            }
 
             const handleScroll = () => {
-                window.pageYOffset >= stickingPoint
-                        ? makeSticky()
+                if(!box) box = buildBox();
+
+                const stickingPoint = isSticky
+                    ? stuck[selector].stickingPoint
+                    : stuck[stickUnder]
+                    ? box.top - stuck[stickUnder].height - stuck[stickUnder].topPosition
+                    : box.top - stuck.height;
+
+                window.pageYOffset > stickingPoint
+                        ? makeSticky(stickingPoint)
                         : makeUnSticky();
             };
 
@@ -135,22 +138,21 @@ const sticker = new Aid({
                 resize: makeUnSticky
             }
 
-            next({ handlers, elHeight, stickyTopPosition });
+            next({ handlers });
         },
         isAlreadyRegistered() {
             const { selector, registered, next } = this;
-            const item = registered.find(obj => obj.selector === selector);
 
-            next(!!item);
+            next(!!registered[selector]);
         },
-        registerElement({ handlers, elHeight, stickyTopPosition }) {
+        registerElement({ handlers }) {
             const { selector, registered } = this;
 
             for (let eventName in handlers) {
                 window.addEventListener(eventName, handlers[eventName]);
             }
 
-            registered.push({ selector, handlers, elHeight, stickyTopPosition });
+            registered[selector] = { handlers };
         }
     },
     instruct: {
