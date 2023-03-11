@@ -34,7 +34,7 @@
         developer sandbox by appending <code>/api</code> to the local dev server's
         localhost address.
       </p>
-      <div><b>{{  sticker.currentScreen }}</b></div>
+      <div><b>{{  sticker.currentScreenSize }}</b></div>
       <div id="header"><b>Header</b></div>
       <h3>Edit this Vue.js app:</h3>
       <p>
@@ -111,7 +111,7 @@ const stickys = [
   { 
     selector: '#van',
     stickUnder: '.topNav',
-    screenSize: '-small'
+    screenSize: ['small', 'large']
   },
   // {
   //   selector: '#addUser',

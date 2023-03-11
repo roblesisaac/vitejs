@@ -8,9 +8,11 @@ const sticker = new Aid({
             height: 0
         },
         currentScreenSize: () => {
-            return window.matchMedia("(max-width: 639px)").matches
+            const matches = (media) => window.matchMedia(media).matches;
+            
+            return matches("(max-width: 47.9375em)")
                 ? 'small'
-                : window.matchMedia("(min-width: 640px) and (max-width: 1023px)").matches
+                : matches("(min-width: 48em) and (max-width: 63.9375em)")
                 ? 'medium'
                 : 'large'
         }
