@@ -105,9 +105,7 @@ const sticker = new Aid({
                 }
 
                 isSticky = true;
-
                 const { top, left, height, width, placeholder } = box;
-
                 const topPosition = top-stickingPoint;
 
                 const stickyStyle = {
@@ -120,9 +118,7 @@ const sticker = new Aid({
 
                 Object.assign(el.style, stickyStyle);
                 el.parentNode.insertBefore(placeholder, el.nextSibling);
-
                 stuck[selector] = { height, stickingPoint, topPosition };
-
                 stuck.height += height;
             };
 
