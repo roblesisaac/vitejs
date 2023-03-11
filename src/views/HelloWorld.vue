@@ -111,12 +111,16 @@ const stickys = [
   { 
     selector: '#van',
     stickUnder: '.topNav',
-    screenSize: ['small', 'large']
+    screenSize: '-medium',
+    // unstickWhen: {
+    //   isSticky: '#addUser',
+    //   reachesTop: ''
+    // }
   },
-  // {
-  //   selector: '#addUser',
-  //   stickUnder: '#van'
-  // }
+  {
+    selector: '#addUser',
+    stickUnder: '#van'
+  }
 ];
 
 onMounted(async () => {
