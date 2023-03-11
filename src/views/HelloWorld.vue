@@ -34,6 +34,7 @@
         developer sandbox by appending <code>/api</code> to the local dev server's
         localhost address.
       </p>
+      <div><b>{{  sticker.currentScreen }}</b></div>
       <div id="header"><b>Header</b></div>
       <h3>Edit this Vue.js app:</h3>
       <p>
@@ -106,15 +107,16 @@ const { sticker } = useStickyStore();
 const loading = ref(true);
 const users = ref([]);
 const stickys = [
-  '#header', 
+  '#header',
   { 
     selector: '#van',
-    stickUnder: '.topNav'
+    stickUnder: '.topNav',
+    screenSize: '-small'
   },
-  {
-    selector: '#addUser',
-    stickUnder: '#van'
-  }
+  // {
+  //   selector: '#addUser',
+  //   stickUnder: '#van'
+  // }
 ];
 
 onMounted(async () => {

@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia';
-import { Aid } from '../../api/utils/aidkit';
+import { Aid, convert } from '../../api/utils/aidkit';
 
 const sticker = new Aid({
     state: {
@@ -7,21 +7,24 @@ const sticker = new Aid({
         stuck: {
             height: 0
         },
-        screenSize: {
-            small: () => window.matchMedia("(max-width: 639px)").matches,
-            medium: () => window.matchMedia("(min-width: 640px) and (max-width: 1023px)").matches,
-            large: () => window.matchMedia("(min-width: 1024px)").matches,
-        }          
+        currentScreenSize: () => {
+            return window.matchMedia("(max-width: 639px)").matches
+                ? 'small'
+                : window.matchMedia("(min-width: 640px) and (max-width: 1023px)").matches
+                ? 'medium'
+                : 'large'
+        }
     },
     steps: {
         defineSelector() {
             const { item, learn } = this;
 
-            let { selector, stickUnder } = item;
+            let { selector, stickUnder, screenSize } = item;
 
             learn({ 
                 selector: selector || item, 
-                stickUnder 
+                stickUnder,
+                screenSize 
             });
         },
         deregister() {
@@ -50,7 +53,7 @@ const sticker = new Aid({
             learn({ el });
         },
         initScrollHandler() {
-            const { next, el, stuck, selector, stickUnder } = this;
+            const { next, el, stuck, selector, stickUnder, screenSize } = this;
 
             let box,
                 initialStyle = el.style,
@@ -73,6 +76,28 @@ const sticker = new Aid({
                     placeholder: elem
                 }
             };
+
+            const screenSizeIsValid = currentScreenSize => {
+                if(!screenSize) {
+                    return true;
+                }
+
+                const defaultSizes = ['small', 'medium', 'large'];
+
+                let validSizes = convert.toArray(screenSize),
+                    hasNegatives;
+
+                validSizes.forEach(size => {
+                    hasNegatives = hasNegatives || size.includes('-')
+                });
+
+                if(hasNegatives) {
+                    validSizes = validSizes.concat(defaultSizes);
+                }
+
+                return validSizes.includes(currentScreenSize)
+                    && !validSizes.includes('-'+currentScreenSize);
+            }
 
             const makeSticky = (stickingPoint) => {
                 if(isSticky) {
@@ -102,13 +127,13 @@ const sticker = new Aid({
             };
 
             const makeUnSticky = () => {
+                if(!box) return;
+
                 const { height, placeholder } = box;
                 el.style = initialStyle;
                 box = buildBox();
 
-                if(!isSticky) {
-                    return
-                }
+                if(!isSticky) return;
 
                 isSticky = false;
                 stuck.height -= height;
@@ -120,6 +145,8 @@ const sticker = new Aid({
             }
 
             const handleScroll = () => {
+                if(!screenSizeIsValid(this.currentScreenSize)) return;
+
                 box = box || buildBox();
 
                 const Stuck = stuck[selector];
@@ -152,8 +179,10 @@ const sticker = new Aid({
         registerElement({ handlers }) {
             const { selector, registered } = this;
 
+            const options = { passive: true };
+
             for (let name in handlers) {
-                window.addEventListener(name, handlers[name], { passive: true });
+                window.addEventListener(name, handlers[name], options);
             }
 
             registered[selector] = { handlers };
