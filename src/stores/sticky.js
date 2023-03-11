@@ -9,7 +9,7 @@ const sticker = new Aid({
         },
         currentScreenSize: () => {
             const matches = (media) => window.matchMedia(media).matches;
-            
+
             return matches("(max-width: 47.9375em)")
                 ? 'small'
                 : matches("(min-width: 48em) and (max-width: 63.9375em)")
@@ -21,12 +21,13 @@ const sticker = new Aid({
         defineSelector() {
             const { item, learn } = this;
 
-            let { selector, stickUnder, screenSize } = item;
+            let { selector, stickUnder, screenSize, unstickWhen } = item;
 
             learn({ 
                 selector: selector || item, 
                 stickUnder,
-                screenSize 
+                screenSize,
+                unstickWhen
             });
         },
         deregister() {
@@ -55,13 +56,13 @@ const sticker = new Aid({
             learn({ el });
         },
         initScrollHandler() {
-            const { next, el, stuck, selector, stickUnder, screenSize } = this;
+            const { next, el, stuck, selector, stickUnder, screenSize, unstickWhen } = this;
 
             let box,
                 initialStyle = el.style,
                 isSticky = false;
 
-            const buildBox = () => {
+            const buildBox = (el) => {
                 const { height, left, width } = el.getBoundingClientRect();
                 const top = el.offsetTop;
                 const elem = document.createElement('div');
@@ -101,6 +102,22 @@ const sticker = new Aid({
                     && !validSizes.includes('-'+currentScreenSize);
             }
 
+            const unstickingPoint = (unstickWhen) => {
+                const { touching, isSticky, reachesTop } = unstickWhen;
+
+                const selector = touching || isSticky || reachesTop;
+                const el = document.querySelector(selector);
+                const box = buildBox(el);
+
+                return touching
+                    ? box.top+box.height
+                    : isSticky
+                    ? !!stuck[isSticky]
+                    : stuck[selector]
+                    ? box.top-stuck[selector].stickingPoint
+                    : 1000000000;
+            };
+
             const makeSticky = (stickingPoint) => {
                 if(isSticky) {
                     return;
@@ -129,7 +146,7 @@ const sticker = new Aid({
 
                 const { height, placeholder } = box;
                 el.style = initialStyle;
-                box = buildBox();
+                box = buildBox(el);
 
                 if(!isSticky) return;
 
@@ -145,7 +162,7 @@ const sticker = new Aid({
             const handleScroll = () => {
                 if(!screenSizeIsValid(this.currentScreenSize)) return;
 
-                box = box || buildBox();
+                box = box || buildBox(el);
 
                 const Stuck = stuck[selector];
                 const StickUnder = stuck[stickUnder];
@@ -157,7 +174,18 @@ const sticker = new Aid({
                     ? Top - StickUnder.height - StickUnder.topPosition
                     : Top - stuck.height;
 
-                window.pageYOffset > stickingPoint
+                const shouldStick = () => {
+                    const pageY = window.pageYOffset;
+
+                    if(!unstickWhen) {
+                        return pageY > stickingPoint;
+                    }
+
+                    return pageY > stickingPoint
+                        && pageY < unstickingPoint(unstickWhen);
+                }
+
+                shouldStick()
                         ? makeSticky(stickingPoint)
                         : makeUnSticky();
             };
