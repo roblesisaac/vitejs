@@ -86,7 +86,7 @@ const sticker = new Aid({
                 }
 
                 let screens = convert.toArray(validScreenSizes),
-                    { currentScreenSize:current } = this,
+                    { currentScreenSize: current } = this,
                     negates;
 
                 screens.forEach(size => negates = negates || size.includes('-'));
