@@ -18,25 +18,14 @@ const sticker = new Aid({
     },
     steps: {
         defineSelector() {
-            const { item, learn, currentScreenSize } = this;
+            const { item, learn } = this;
 
-            // if(typeof item == 'string') {
-            //     return learn({ selector: item });
-            // }
-
-            // let { selector } = item;
-
-            // if(item[currentScreenSize]) {
-            //     const specifics = 
-            //     return { selector }
-            // }
-
-            let { selector, stickUnder, screenSize, unstickWhen } = item;
+            let { selector, stickUnder, unstickWhen, screenSize } = item;
 
             learn({ 
                 selector: selector || item, 
+                validScreenSizes: screenSize,
                 stickUnder,
-                screenSize,
                 unstickWhen
             });
         },
@@ -66,9 +55,10 @@ const sticker = new Aid({
             learn({ el });
         },
         initScrollHandler() {
-            const { next, el, stuck, selector, stickUnder, screenSize, unstickWhen } = this;
+            const { next, el, stuck, selector, item, stickUnder, validScreenSizes, unstickWhen } = this;
 
             let box,
+                settings,
                 initialStyle = el.style,
                 isSticky = false;
 
@@ -90,29 +80,29 @@ const sticker = new Aid({
                 }
             };
 
-            const screenIsValid = currentScreenSize => {
-                if(!screenSize) {
+            const screenIsValid = () => {
+                if(!validScreenSizes) {
                     return true;
                 }
 
-                const defaultSizes = ['small', 'medium', 'large'];
+                let screens = convert.toArray(validScreenSizes),
+                    { currentScreenSize:current } = this,
+                    negates;
 
-                let validSizes = convert.toArray(screenSize),
-                    hasNegatives;
+                screens.forEach(size => negates = negates || size.includes('-'));
 
-                validSizes.forEach(size => {
-                    hasNegatives = hasNegatives || size.includes('-')
-                });
-
-                if(hasNegatives) {
-                    validSizes = validSizes.concat(defaultSizes);
+                if(negates) {
+                    screens = screens.concat(['small', 'medium', 'large']);
                 }
 
-                return validSizes.includes(currentScreenSize)
-                    && !validSizes.includes('-'+currentScreenSize);
+                return screens.includes(current)
+                    && !screens.includes('-'+current);
             }
 
             const unstickingPoint = (unstickWhen) => {
+                if(!unstickWhen) {
+                    return document.documentElement.scrollHeight + 100;
+                }
                 const { touching, isSticky, reachesTop } = unstickWhen;
 
                 const selector = touching || isSticky || reachesTop;
@@ -169,13 +159,20 @@ const sticker = new Aid({
                 }
             }
 
+            const currentSettings = () => {
+                return item[this.currentScreenSize] 
+                    || { stickUnder, unstickWhen };
+            }
+
             const handleScroll = () => {
-                if(!screenIsValid(this.currentScreenSize)) return;
+                settings = currentSettings();
+
+                if(!screenIsValid()) return;
 
                 box = box || buildBox(el);
 
                 const Stuck = stuck[selector];
-                const StickUnder = stuck[stickUnder];
+                const StickUnder = stuck[settings.stickUnder];
                 const Top = box.top;
                 const pageY = window.pageYOffset;
 
@@ -185,16 +182,7 @@ const sticker = new Aid({
                     ? Top - StickUnder.height - StickUnder.topPosition
                     : Top - stuck.height;
 
-                const isAtStickingPoint = () => {
-                    if(!unstickWhen) {
-                        return pageY > stickingPoint;
-                    }
-
-                    return pageY > stickingPoint
-                        && pageY < unstickingPoint(unstickWhen);
-                }
-
-                isAtStickingPoint()
+                pageY > stickingPoint && pageY < unstickingPoint(unstickWhen)
                         ? makeSticky(stickingPoint)
                         : makeUnsticky();
             };

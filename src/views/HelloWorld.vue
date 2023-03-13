@@ -117,11 +117,15 @@ const stickys = [
   },
   {
     selector: '#addUser',
-    // stickUnder: '.topNav'
+    medium: {
+      stickUnder: '.topNav'
+    }
   },
   {
     selector: '#header',
-    // stickUnder: '.topNav'
+    small: {
+      stickUnder: '#addUser'
+    }
   },
 ];
 
