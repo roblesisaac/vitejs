@@ -1,12 +1,11 @@
 import { defineStore } from 'pinia';
 import { Aid, convert } from '../../api/utils/aidkit';
+import { ref } from 'vue';
 
 const sticker = new Aid({
     state: {
         registered: {},
-        stuck: {
-            height: 0
-        },
+        stuck: { height: 0 },
         currentScreenSize: () => {
             const matches = (media) => window.matchMedia(media).matches;
 
@@ -19,7 +18,18 @@ const sticker = new Aid({
     },
     steps: {
         defineSelector() {
-            const { item, learn } = this;
+            const { item, learn, currentScreenSize } = this;
+
+            // if(typeof item == 'string') {
+            //     return learn({ selector: item });
+            // }
+
+            // let { selector } = item;
+
+            // if(item[currentScreenSize]) {
+            //     const specifics = 
+            //     return { selector }
+            // }
 
             let { selector, stickUnder, screenSize, unstickWhen } = item;
 
@@ -31,9 +41,9 @@ const sticker = new Aid({
             });
         },
         deregister() {
-            const { selector, registered, stuck } = this;
+            const { selector, registered } = this;
 
-            const item = registered[selector]
+            const item = registered[selector];
             
             if(!item) return;
 
@@ -41,8 +51,8 @@ const sticker = new Aid({
 
             for(let eventName in handlers) {
                 const method = handlers[eventName];
-
-                if(method.name === 'makeUnSticky') method();
+                
+                if(eventName === 'resize') method({ deRegistering: true });
                 window.removeEventListener(eventName, method);
             }
             
@@ -80,7 +90,7 @@ const sticker = new Aid({
                 }
             };
 
-            const screenSizeIsValid = currentScreenSize => {
+            const screenIsValid = currentScreenSize => {
                 if(!screenSize) {
                     return true;
                 }
@@ -141,7 +151,7 @@ const sticker = new Aid({
                 stuck.height += height;
             };
 
-            const makeUnSticky = () => {
+            const makeUnsticky = () => {
                 if(!box) return;
 
                 const { height, placeholder } = box;
@@ -160,13 +170,14 @@ const sticker = new Aid({
             }
 
             const handleScroll = () => {
-                if(!screenSizeIsValid(this.currentScreenSize)) return;
+                if(!screenIsValid(this.currentScreenSize)) return;
 
                 box = box || buildBox(el);
 
                 const Stuck = stuck[selector];
                 const StickUnder = stuck[stickUnder];
                 const Top = box.top;
+                const pageY = window.pageYOffset;
 
                 const stickingPoint = Stuck
                     ? Stuck.stickingPoint
@@ -174,9 +185,7 @@ const sticker = new Aid({
                     ? Top - StickUnder.height - StickUnder.topPosition
                     : Top - stuck.height;
 
-                const shouldStick = () => {
-                    const pageY = window.pageYOffset;
-
+                const isAtStickingPoint = () => {
                     if(!unstickWhen) {
                         return pageY > stickingPoint;
                     }
@@ -185,13 +194,28 @@ const sticker = new Aid({
                         && pageY < unstickingPoint(unstickWhen);
                 }
 
-                shouldStick()
+                isAtStickingPoint()
                         ? makeSticky(stickingPoint)
-                        : makeUnSticky();
+                        : makeUnsticky();
             };
 
+            // Fixes resize glitch on mobile
+            let prevWindowSize = window.innerWidth;
+
+            const handleResize = async ({ deRegistering }) => {
+                if(deRegistering) {
+                    return makeUnsticky();
+                }
+                
+                const currentWindowSize = window.innerWidth;
+                const sizeDifference = Math.abs(prevWindowSize - currentWindowSize);
+
+                prevWindowSize = currentWindowSize;
+                if (sizeDifference > 1) makeUnsticky();
+            }
+
             const handlers = {
-                resize: makeUnSticky,
+                resize: handleResize,
                 scroll: handleScroll
             }
 

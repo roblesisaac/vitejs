@@ -3,7 +3,7 @@
     <div class="cell-md-1-2">
       <h1>Aloha</h1>
       <p>
-        Open your terminal to the project directory and run <code>npm i</code> to
+        Open open your terminal to the project directory and run <code>npm i</code> to
         install the Vue.js dependencies. Then run <code>cloud dev</code> to launch
         the local Vue.js dev server. You can access the API on your personal
         developer sandbox by appending <code>/api</code> to the local dev server's
@@ -28,13 +28,13 @@
     </div>
     <div class="cell-md-1-2">
       <p>
-        Open your terminal to the project directory and run <code>npm i</code> to
+        Open YOUR terminal to the project directory and run <code>npm i</code> to
         install the Vue.js dependencies. Then run <code>cloud dev</code> to launch
         the local Vue.js dev server. You can access the API on your personal
         developer sandbox by appending <code>/api</code> to the local dev server's
         localhost address.
       </p>
-      <div><b>{{  sticker.currentScreenSize }}</b></div>
+      <div><b>{{  sticker.stuck.height }}</b></div>
       <div id="header"><b>Header</b></div>
       <h3>Edit this Vue.js app:</h3>
       <p>
@@ -107,19 +107,22 @@ const { sticker } = useStickyStore();
 const loading = ref(true);
 const users = ref([]);
 const stickys = [
-  '#header',
   { 
     selector: '#van',
     stickUnder: '.topNav',
     screenSize: '-medium',
-    unstickWhen: {
-      touching: '#addUser'
-    }
+    // unstickWhen: {
+    //   touching: '#addUser'
+    // }
   },
   {
     selector: '#addUser',
-    stickUnder: '#van'
-  }
+    // stickUnder: '.topNav'
+  },
+  {
+    selector: '#header',
+    // stickUnder: '.topNav'
+  },
 ];
 
 onMounted(async () => {
