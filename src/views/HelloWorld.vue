@@ -111,9 +111,9 @@ const stickys = [
     selector: '#van',
     stickUnder: '.topNav',
     screenSize: '-medium',
-    // unstickWhen: {
-    //   touching: '#addUser'
-    // }
+    unstickWhen: {
+      touching: '#addUser'
+    }
   },
   {
     selector: '#addUser',

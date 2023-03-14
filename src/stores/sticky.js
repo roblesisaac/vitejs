@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia';
 import { Aid, convert } from '../../api/utils/aidkit';
 import { ref } from 'vue';
+import { def } from '@vue/shared';
 
 const sticker = new Aid({
     state: {
@@ -92,17 +93,15 @@ const sticker = new Aid({
                 screens.forEach(size => negates = negates || size.includes('-'));
 
                 if(negates) {
-                    screens = screens.concat(['small', 'medium', 'large']);
+                    const defaults = ['small', 'medium', 'large'];
+                    screens = screens.concat(defaults);
                 }
 
                 return screens.includes(current)
                     && !screens.includes('-'+current);
             }
 
-            const unstickingPoint = (unstickWhen) => {
-                if(!unstickWhen) {
-                    return document.documentElement.scrollHeight + 100;
-                }
+            const unstickingPoint = () => {
                 const { touching, isSticky, reachesTop } = unstickWhen;
 
                 const selector = touching || isSticky || reachesTop;
@@ -118,26 +117,25 @@ const sticker = new Aid({
                     : 1000000000;
             };
 
-            const makeSticky = (stickingPoint) => {
+            const makeSticky = (stickingPoint, topPosition) => {
                 if(isSticky) {
                     return;
                 }
 
                 isSticky = true;
-                const { top, left, height, width, placeholder } = box;
-                const topPosition = top-stickingPoint;
-
+                let { top, left, height, width, placeholder } = box;
+                top = topPosition || top-stickingPoint;
                 const stickyStyle = {
-                    position: 'fixed',
-                    top: topPosition+'px',
+                    top: top+'px',
                     left: left+'px',
                     width: width+'px',
                     zIndex: 100 + stuck.height
                 };
 
+                el.classList.add('fixed');
                 Object.assign(el.style, stickyStyle);
                 el.parentNode.insertBefore(placeholder, el.nextSibling);
-                stuck[selector] = { height, stickingPoint, topPosition };
+                stuck[selector] = { height, stickingPoint, top };
                 stuck.height += height;
             };
 
@@ -146,6 +144,7 @@ const sticker = new Aid({
 
                 const { height, placeholder } = box;
                 el.style = initialStyle;
+                el.classList.remove('fixed');
                 box = buildBox(el);
 
                 if(!isSticky) return;
@@ -165,32 +164,38 @@ const sticker = new Aid({
             }
 
             const handleScroll = () => {
-                settings = currentSettings();
-
                 if(!screenIsValid()) return;
 
+                settings = currentSettings();
                 box = box || buildBox(el);
 
                 const Stuck = stuck[selector];
                 const StickUnder = stuck[settings.stickUnder];
                 const Top = box.top;
-                const pageY = window.pageYOffset;
+                const scroll = window.pageYOffset;
 
                 const stickingPoint = Stuck
                     ? Stuck.stickingPoint
                     : StickUnder
-                    ? Top - StickUnder.height - StickUnder.topPosition
+                    ? Top - StickUnder.height - StickUnder.top
                     : Top - stuck.height;
 
-                pageY > stickingPoint && pageY < unstickingPoint(unstickWhen)
-                        ? makeSticky(stickingPoint)
-                        : makeUnsticky();
+                if(unstickWhen) {
+                    return scroll > stickingPoint 
+                        && scroll < unstickingPoint()
+                            ? makeSticky(stickingPoint)
+                            : makeUnsticky();
+                }
+
+                scroll > stickingPoint
+                    ? makeSticky(stickingPoint)
+                    : makeUnsticky();
             };
 
             // Fixes resize glitch on mobile
             let prevWindowSize = window.innerWidth;
 
-            const handleResize = async ({ deRegistering }) => {
+            const handleResize = ({ deRegistering }) => {
                 if(deRegistering) {
                     return makeUnsticky();
                 }
